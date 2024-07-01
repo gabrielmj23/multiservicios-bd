@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  line-height: 1.8;
+  @apply bg-slate-100;
+}
+
+.black-nav {
+  @apply text-lg text-black font-bold;
+}
