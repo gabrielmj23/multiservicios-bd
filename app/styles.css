@@ -14,8 +14,16 @@ h2 {
   @apply text-2xl font-bold;
 }
 
+nav {
+  box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
 nav > a {
-  @apply font-semibold hover:drop-shadow-xl;
+  @apply font-semibold hover:drop-shadow-xl text-lg;
+}
+
+a > span {
+  @apply flex items-center gap-2;
 }
 
 .custom-field {

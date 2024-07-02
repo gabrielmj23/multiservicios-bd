@@ -1,4 +1,10 @@
 import { Link, MetaFunction, Outlet } from "@remix-run/react";
+import { LuStore, LuShoppingCart } from "react-icons/lu";
+import { FiTool } from "react-icons/fi";
+import { FaRegUser, FaCar, FaChartLine } from "react-icons/fa";
+
+import { BsBoxSeam } from "react-icons/bs";
+import { TfiReceipt } from "react-icons/tfi";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Dashboard" }];
@@ -6,19 +12,56 @@ export const meta: MetaFunction = () => {
 
 export default function Dashboard() {
   return (
-    <div className="bg-[#E0DAA3] h-screen">
+    <div className="bg-orange-100 h-screen">
       <header className="bg-[#A4D279] py-3 px-12 flex items-center gap-8">
-        <img src="/logo.png" alt="logo" className="h-28" />
-        <span className="text-5xl font-bold">Multiservicios Mundial</span>
+        <img src="/logo.png" alt="logo" className="h-20" />
+        <span className="text-4xl font-bold">Multiservicios Mundial</span>
       </header>
-      <nav className="flex justify-evenly bg-gray-300 py-2">
-        <Link to="/dashboard">Inicio</Link>
-        <Link to="/dashboard/servicios">Servicios</Link>
-        <Link to="/dashboard/catalogo">Catálogo</Link>
-        <Link to="/dashboard/inventario">Inventario</Link>
-        <Link to="/dashboard/estadisticas">Estadísticas</Link>
-      </nav>
-      <Outlet />
+      <div className="flex">
+        <nav className="flex flex-col gap-6 bg-gray-300 py-6 px-10 max-w-fit min-h-full sticky">
+          <Link to="/dashboard">
+            <span>
+              <LuStore /> Mi Sucursal
+            </span>
+          </Link>
+          <Link to="/dashboard/clientes">
+            <span>
+              <FaRegUser /> Clientes
+            </span>
+          </Link>
+          <Link to="/dashboard/vehiculos">
+            <span>
+              <FaCar /> Vehículos
+            </span>
+          </Link>
+          <Link to="/dashboard/servicios">
+            <span>
+              <FiTool /> Servicios
+            </span>
+          </Link>
+          <Link to="/dashboard/inventario">
+            <span>
+              <BsBoxSeam /> Inventario
+            </span>
+          </Link>
+          <Link to="/dashboard/tienda">
+            <span>
+              <LuShoppingCart /> Tienda
+            </span>
+          </Link>
+          <Link to="/dashboard/facturas">
+            <span>
+              <TfiReceipt /> Facturas
+            </span>
+          </Link>
+          <Link to="/dashboard/estadisticas">
+            <span>
+              <FaChartLine /> Estadísticas
+            </span>
+          </Link>
+        </nav>
+        <Outlet />
+      </div>
     </div>
   );
 }
