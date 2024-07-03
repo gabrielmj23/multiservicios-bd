@@ -2,7 +2,7 @@ import { json } from "@remix-run/react";
 import sql from "mssql";
 import { sqlConfig } from "./connectDb.server";
 import { clienteSchema } from "./schemas";
-import { handleError } from "./common";
+import { handleError } from "./common.server";
 
 export async function getClientes() {
   try {

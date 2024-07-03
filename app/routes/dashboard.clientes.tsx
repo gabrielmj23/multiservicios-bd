@@ -2,7 +2,9 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
+import { z } from "zod";
 import { addCliente, editCliente, getClientes } from "~/utils/clientes.server";
+import { clienteSchema } from "~/utils/schemas";
 
 export async function loader() {
   return getClientes();
@@ -10,7 +12,7 @@ export async function loader() {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  switch (formData.get("_action")) {
+  switch (String(formData.get("_action"))) {
     case "nuevo":
       return await addCliente(formData);
     case "editar":
@@ -23,20 +25,22 @@ export default function DashboardClientes() {
   const fetcher = useFetcher();
   const [nuevoClienteModalOpen, setNuevoClienteModalOpen] = useState(false);
   const [editClienteModalOpen, setEditClienteModalOpen] = useState(false);
-  const [clienteEditando, setClienteEditando] = useState<{
-    CICliente: string;
-    NombreCliente: string;
-    Tlf1: string;
-    Tlf2: string;
-    EmailCliente: string;
-  } | null>(null);
+  const [clienteEditando, setClienteEditando] = useState<z.infer<
+    typeof clienteSchema
+  > | null>(null);
 
   if (clientes.type === "error") {
-    return <div>{clientes.message}</div>;
+    return (
+      <div>
+        <h1>Clientes</h1>
+        <p>{clientes.message}</p>
+      </div>
+    );
   }
 
   return (
     <div className="p-6">
+      <h1>Clientes</h1>
       {clientes.data.length === 0 ? (
         <>
           <p>No hay datos todavía</p>
