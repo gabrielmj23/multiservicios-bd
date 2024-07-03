@@ -19,10 +19,13 @@
     "mssql": "^10.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^5.2.1"
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^5.2.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.9.2",
+    "@types/mssql": "^9.1.5",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.7.4",

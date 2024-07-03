@@ -34,3 +34,7 @@ a > span {
   background-image: url("../bgphoto2.jpg");
   background-size: cover;
 }
+
+div[role="dialog"] form > fieldset {
+  @apply mb-2;
+}
