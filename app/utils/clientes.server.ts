@@ -22,6 +22,22 @@ export async function getClientes() {
   }
 }
 
+export async function getCedulas() {
+  try {
+    await sql.connect(sqlConfig);
+    const result = await sql.query`SELECT CICliente FROM Clientes`;
+    const cedulas = result.recordset.map((cliente) =>
+      String(cliente.CICliente)
+    );
+    return {
+      type: "success" as const,
+      data: cedulas,
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
 export async function addCliente(formData: FormData) {
   try {
     let cliente = {

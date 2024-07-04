@@ -32,6 +32,13 @@ export const marcaConModelosSchema = z.object({
   DescModelo: z.string().min(1).max(20).nullable(),
 });
 
+export const marcaSoloConModelos = z.object({
+  CodMarca: z.number().int().min(1),
+  NombreMarca: z.string().min(1).max(20),
+  CodModelo: z.number().int().min(1),
+  DescModelo: z.string().min(1).max(20),
+});
+
 export const modeloSchema = z.object({
   CodMarca: z.number().int().min(1),
   CodModelo: z.number().int().min(1).optional(),
@@ -55,7 +62,7 @@ export const viewModeloSchema = z.object({
   TipoRefri: z.string().min(1).max(12),
   NombreTipo: z.string().min(1).max(20),
 });
-/*
+
 export const vehiculoSchema = z.object({
   PlacaVehic: z.string().min(1).max(8),
   FechaAdq: z.date(),
@@ -68,7 +75,6 @@ export const vehiculoSchema = z.object({
 export const vehiculoConForaneosSchema = vehiculoSchema.extend({
   CodVehiculo: z.number().int().min(1),
   NombreMarca: z.string().min(1).max(20),
-  NombreModelo: z.string().min(1).max(20),
+  DescModelo: z.string().min(1).max(20),
   NombreCliente: z.string().min(1).max(30),
 });
-*/
