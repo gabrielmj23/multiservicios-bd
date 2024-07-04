@@ -5,8 +5,8 @@ CREATE TABLE Sucursales (
 	RIFSuc VARCHAR(12) PRIMARY KEY,
 	NombreSuc VARCHAR(20) NOT NULL,
 	CiudadSuc VARCHAR(30) NOT NULL,
-	CIEncargado VARCHAR(10) NOT NULL,
-	FechaInicioEncargado DATE NOT NULL
+	CIEncargado VARCHAR(10),
+	FechaInicioEncargado DATE
 )
 
 CREATE TABLE TiposVehiculos (
