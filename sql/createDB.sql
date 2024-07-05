@@ -78,7 +78,9 @@ CREATE TABLE FichasServicios (
 	TiempoSalEst DATETIME NOT NULL,
 	TiempoSalReal DATETIME NOT NULL,
 	CodVehiculo INT NOT NULL,
-	FOREIGN KEY (CodVehiculo) REFERENCES Vehiculos(CodVehiculo) ON UPDATE CASCADE
+	RIFSucursal VARCHAR(12) NOT NULL,
+	FOREIGN KEY (CodVehiculo) REFERENCES Vehiculos(CodVehiculo) ON UPDATE CASCADE,
+	FOREIGN KEY (RIFSucursal) REFERENCES Sucursales(RIFSuc)
 )
 
 CREATE TABLE LineasSuministro (
@@ -597,3 +599,108 @@ BEGIN
         ROLLBACK TRANSACTION
 	END
 END
+
+-- ESTADÍSTICAS
+-- Cliente más / menos frecuente
+-- Esta vista guarda la cantidad de servicios solicitados por cada cliente a cada sucursal
+-- Es responsabilidad de la aplicación filtrar por sucursal y ordenar para tomar el mayor / menor
+GO
+CREATE VIEW ClientesFrecuentesPorSuc
+AS
+SELECT s.RIFSuc, s.NombreSuc, c.CICliente, c.NombreCliente, COUNT(fs.CodFicha) AS TotalServicios
+FROM Clientes c, Vehiculos v, Sucursales s, FichasServicios fs
+WHERE c.CICliente = v.CIPropietario
+AND fs.CodVehiculo = v.CodVehiculo
+AND fs.RIFSucursal = s.RIFSuc
+GROUP BY s.RIFSuc, s.NombreSuc, c.CICliente, c.NombreCliente
+ORDER BY TotalServicios DESC
+
+-- Producto con mayor/menos salida por ventas
+GO
+CREATE VIEW ArticulosVendidosPorSuc
+AS
+SELECT suc.RIFSuc, suc.NombreSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT, SUM(fIncluyen.Cantidad) AS TotalVentas
+FROM ArticulosTienda aTienda, Sucursales suc, FacturasTiendaIncluyen fIncluyen
+WHERE aTienda.RIFSuc = suc.RIFSuc
+AND fIncluyen.CodArticuloT = aTienda.CodArticuloT
+GROUP BY suc.RIFSuc, suc.NombreSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT
+ORDER BY TotalVentas DESC
+
+-- Personal que realiza más/menos servicios por mes
+GO
+CREATE VIEW PersonalRealizaServiciosPorMes
+AS
+SELECT emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt) AS AñoServ, MONTH(fs.TiempoEnt) AS MesServ, COUNT(DISTINCT ar.CodServicio) AS TotalServicios
+FROM Empleados emp, FichasServicios fs, ActividadesRealizadas ar, Servicios srv
+WHERE ar.CodFicha = fs.CodFicha
+AND ar.CodServicio = srv.CodServicio
+AND srv.CIEncargado = emp.CIEmpleado
+GROUP BY emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt), MONTH(fs.TiempoEnt)
+ORDER BY TotalServicios DESC
+
+-- Marca de vehículo más atendida por servicio
+GO
+CREATE VIEW MarcasAtendidasPorServicio
+AS
+SELECT fs.RIFSucursal, srv.NombreServ, mar.NombreMarca, COUNT(DISTINCT fs.CodFicha) AS TotalServicios
+FROM FichasServicios fs, Servicios srv, Marcas mar, Vehiculos v, ActividadesRealizadas ar
+WHERE ar.CodFicha = fs.CodFicha
+AND ar.CodServicio = srv.CodServicio
+AND fs.CodVehiculo = v.CodVehiculo
+AND v.CodMarca = mar.CodMarca
+GROUP BY fs.RIFSucursal, srv.NombreServ, mar.NombreMarca
+ORDER BY TotalServicios DESC
+
+-- Histórico de uso de servicio por vehículo
+GO
+CREATE VIEW HistoricoServiciosPorVehiculo
+AS
+SELECT v.CodVehiculo, v.PlacaVehic, v.CIPropietario, srv.NombreServ, act.DescActividad, fs.TiempoEnt
+FROM Vehiculos v, Servicios srv, FichasServicios fs, ActividadesRealizadas ar, Actividades act
+WHERE v.CodVehiculo = fs.CodVehiculo
+AND ar.CodFicha = fs.CodFicha
+AND ar.CodServicio = act.CodServicio
+AND ar.CodAct = act.CodActividad
+AND act.CodServicio = srv.CodServicio
+ORDER BY v.CodVehiculo DESC, fs.TiempoEnt DESC
+
+-- Comparación entre los distintos M&M: cual factura más/menos por servicios, por ventas
+GO
+CREATE VIEW SucursalesFactServicios
+AS
+SELECT suc.RIFSuc, suc.NombreSuc, COUNT(factServ.CodFicha) AS TotalFacturas, SUM(factServ.MontoFServ) AS TotalFacturado
+FROM Sucursales suc, FacturasServicio factServ, FichasServicios fs
+WHERE factServ.CodFicha = fs.CodFicha
+AND fs.RIFSucursal = suc.RIFSuc
+GROUP BY suc.RIFSuc, suc.NombreSuc
+ORDER BY TotalFacturado DESC
+
+-- Servicio más/menos solicitado
+GO
+CREATE VIEW ServiciosMasSolicitados
+AS
+SELECT srv.CodServicio, srv.NombreServ, COUNT(DISTINCT fs.CodFicha) AS TotalSolicitudes
+FROM Servicios srv, FichasServicios fs, ActividadesRealizadas ar
+WHERE fs.CodFicha = ar.CodFicha
+AND ar.CodServicio = srv.CodServicio
+GROUP BY srv.CodServicio, srv.NombreServ
+ORDER BY TotalSolicitudes DESC
+
+-- Proveedor que nos suministra más/menos productos
+GO
+CREATE VIEW ProveedorMasSuministros
+AS
+SELECT pro.RIFProv, pro.RazonProv, SUM(rcIncluyen.Cantidad) AS TotalSuministrado
+FROM Proveedores pro, RequisicionesCompraIncluyen rcIncluyen, OrdenesCompra oc
+WHERE pro.RIFProv = oc.RIFProv
+AND rcIncluyen.CodReq = oc.CodReq
+GROUP BY pro.RIFProv, pro.RazonProv
+ORDER BY TotalSuministrado DESC
+
+-- Productos ajustados por diferencias en inventario físico
+GO
+CREATE VIEW InsumosAjustados
+AS
+SELECT ins.CodIns, ins.NombreIns, aj.CodAjuste, aj.FechaAjuste, aj.TipoAjuste, aj.ComentarioAjuste, aj.Diferencia
+FROM Insumos ins, AjustesInventario aj
+WHERE aj.CodIns = ins.CodIns
