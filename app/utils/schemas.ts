@@ -86,4 +86,15 @@ export const empleadoSchema = z.object({
   TlfEmp: z.string().min(1).max(12),
   SalarioEmp: z.number().gt(0),
   RIFSuc: z.string().min(1).max(12),
-})
+});
+
+export const servicioConActividadesSchema = z.object({
+  CodServicio: z.number().int().min(1),
+  NombreServ: z.string().min(1).max(20),
+  MontoServ: z.number().gte(0),
+  CIEncargado: z.string().min(1).max(10),
+  CICoordinador: z.string().min(1).max(10),
+  CodActividad: z.number().int().min(1).nullable(),
+  DescActividad: z.string().min(1).max(20).nullable(),
+  CostoHora: z.number().gt(0).nullable(),
+});

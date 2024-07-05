@@ -447,9 +447,9 @@ BEGIN
 		WHERE CodVehiculo IN (
 			SELECT CodVehiculo FROM Vehiculos WHERE CIPropietario = @CICliente
 		)
-		AND FechaEnt >= DATEADD(mm, -4, GETDATE())
-		GROUP BY MONTH(FechaEnt)
-	)
+		AND TiempoEnt >= DATEADD(mm, -4, GETDATE())
+		GROUP BY MONTH(TiempoEnt)
+	) t
 	-- Encontrar el mayor descuento aplicable
 	DECLARE @Porcentaje DECIMAL(6,2)
 	SELECT TOP 1 @Porcentaje = Porcentaje
