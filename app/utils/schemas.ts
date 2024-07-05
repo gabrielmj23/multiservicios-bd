@@ -78,3 +78,12 @@ export const vehiculoConForaneosSchema = vehiculoSchema.extend({
   DescModelo: z.string().min(1).max(20),
   NombreCliente: z.string().min(1).max(30),
 });
+
+export const empleadoSchema = z.object({
+  CIEmpleado: z.string().min(1).max(10),
+  NombreEmp: z.string().min(1).max(30),
+  DireccionEmp: z.string().min(1).max(30),
+  TlfEmp: z.string().min(1).max(12),
+  SalarioEmp: z.number().gt(0),
+  RIFSuc: z.string().min(1).max(12),
+})

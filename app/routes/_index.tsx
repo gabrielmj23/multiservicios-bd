@@ -3,7 +3,6 @@ import { Form, redirect, useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { commitSession, getSession } from "~/session";
-import { getEmpleadosInicio } from "~/utils/empleados.server";
 import { addSucursal, getSucursalesInicio } from "~/utils/sucursales.server";
 
 export const meta: MetaFunction = () => {
@@ -13,7 +12,6 @@ export const meta: MetaFunction = () => {
 export async function loader() {
   return {
     sucursales: await getSucursalesInicio(),
-    empleados: await getEmpleadosInicio(),
   };
 }
 
@@ -36,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Index() {
-  const { sucursales, empleados } = useLoaderData<typeof loader>();
+  const { sucursales } = useLoaderData<typeof loader>();
   const [isCreating, setIsCreating] = useState(false);
   const fetcher = useFetcher();
   return (
@@ -47,8 +45,6 @@ export default function Index() {
       <h1 className="text-4xl mb-6">Multiservicios Mundial</h1>
       {sucursales.type === "error" ? (
         <p>Error al cargar las sucursales</p>
-      ) : empleados.type === "error" ? (
-        <p>Error al cargar empleados</p>
       ) : (
         <>
           <Form className="flex flex-col gap-3 min-w-80" method="post">

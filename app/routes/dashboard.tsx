@@ -6,6 +6,7 @@ import { HiOutlineIdentification } from "react-icons/hi2";
 import { BsBoxSeam } from "react-icons/bs";
 import { TfiReceipt } from "react-icons/tfi";
 import { MdOutlineClass } from "react-icons/md";
+import { GrUserWorker } from "react-icons/gr";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Dashboard" }];
@@ -33,6 +34,11 @@ export default function Dashboard() {
           <Link to="/dashboard/marcas">
             <span>
               <HiOutlineIdentification /> Marcas y modelos
+            </span>
+          </Link>
+          <Link to="/dashboard/empleados">
+            <span>
+              <GrUserWorker /> Empleados
             </span>
           </Link>
           <Link to="/dashboard/clientes">
