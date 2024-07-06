@@ -18,6 +18,7 @@ import { useState } from "react";
 import { getSession } from "~/session";
 import { getEmpleados } from "~/utils/empleados.server";
 import { addFicha, getFichas } from "~/utils/fichas.server";
+import { addReserva, getReservas } from "~/utils/reservas.server";
 import {
   addActividad,
   addServicio,
@@ -42,6 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     empleados: await getEmpleados(RIFSuc),
     fichas: await getFichas(RIFSuc),
     vehiculos: await getVehiculoParaFicha(RIFSuc),
+    reservas: await getReservas(RIFSuc),
   };
 }
 
@@ -65,11 +67,13 @@ export async function action({ request }: ActionFunctionArgs) {
       return await ofrecerServicio(formData, RIFSuc);
     case "crearFicha":
       return await addFicha(formData, RIFSuc);
+    case "crearReserva":
+      return await addReserva(formData, RIFSuc);
   }
 }
 
 export default function DashboardServicios() {
-  const { serviciosSuc, servicios, empleados, fichas, vehiculos } =
+  const { serviciosSuc, servicios, empleados, fichas, vehiculos, reservas } =
     useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [codServicioAgg, setCodServicioAgg] = useState(0);
@@ -77,13 +81,16 @@ export default function DashboardServicios() {
   const [isCreatingAct, setIsCreatingAct] = useState(false);
   const [isOffering, setIsOffering] = useState(false);
   const [isCreatingFicha, setIsCreatingFicha] = useState(false);
+  const [isCreatingReserva, setIsCreatingReserva] = useState(false);
+  const [montoServicioAct, setMontoServicioAct] = useState(0);
 
   if (
     servicios.type === "error" ||
     serviciosSuc.type === "error" ||
     empleados.type === "error" ||
     fichas.type === "error" ||
-    vehiculos.type === "error"
+    vehiculos.type === "error" ||
+    reservas.type === "error"
   ) {
     return (
       <div className="p-6">
@@ -93,6 +100,7 @@ export default function DashboardServicios() {
         <p>{empleados.type === "error" ? empleados.message : null}</p>
         <p>{fichas.type === "error" ? fichas.message : null}</p>
         <p>{vehiculos.type === "error" ? vehiculos.message : null}</p>
+        <p>{reservas.type === "error" ? reservas.message : null}</p>
       </div>
     );
   }
@@ -206,7 +214,41 @@ export default function DashboardServicios() {
             </Table.Body>
           </Table>
         </Tabs.Item>
-        <Tabs.Item title="Reservas"></Tabs.Item>
+        <Tabs.Item title="Reservas">
+          <Button
+            type="button"
+            className="mb-2"
+            onClick={() => setIsCreatingReserva(true)}
+          >
+            Hacer reserva
+          </Button>
+          <Table>
+            <Table.Head>
+              <Table.HeadCell>Número de reserva</Table.HeadCell>
+              <Table.HeadCell>Fecha de reserva</Table.HeadCell>
+              <Table.HeadCell>Fecha a atender</Table.HeadCell>
+              <Table.HeadCell>Abono</Table.HeadCell>
+              <Table.HeadCell>Código de vehículo</Table.HeadCell>
+              <Table.HeadCell>Servicio</Table.HeadCell>
+            </Table.Head>
+            <Table.Body>
+              {reservas.data.map((reserva) => (
+                <Table.Row key={reserva.NumReserva}>
+                  <Table.Cell>{reserva.NumReserva}</Table.Cell>
+                  <Table.Cell>
+                    {new Date(reserva.FechaReserva).toLocaleDateString()}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {new Date(reserva.FechaServicio).toLocaleDateString()}
+                  </Table.Cell>
+                  <Table.Cell>${reserva.Abono.toLocaleString()}</Table.Cell>
+                  <Table.Cell>{reserva.CodVehiculo}</Table.Cell>
+                  <Table.Cell>{reserva.NombreServ}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </Tabs.Item>
       </Tabs>
       <Modal show={isOffering} onClose={() => setIsOffering(false)}>
         <Modal.Header>Ofrecer servicios</Modal.Header>
@@ -402,8 +444,75 @@ export default function DashboardServicios() {
                 />
               </div>
             </fieldset>
-            <Button type="submit" name="_action" value="crearFicha">
+            <Button
+              type="submit"
+              name="_action"
+              value="crearFicha"
+              disabled={fetcher.state !== "idle"}
+            >
               Solicitar
+            </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={isCreatingReserva}
+        onClose={() => setIsCreatingReserva(false)}
+      >
+        <Modal.Header>Crear reserva</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post">
+            <fieldset>
+              <Label htmlFor="CodVehiculo">Vehículo</Label>
+              <Select id="CodVehiculo" name="CodVehiculo" required>
+                {vehiculos.data.map((vehiculo) => (
+                  <option
+                    key={vehiculo.CodVehiculo}
+                    value={vehiculo.CodVehiculo}
+                  >
+                    {vehiculo.CodVehiculo} - Placa: {vehiculo.PlacaVehic}
+                  </option>
+                ))}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <Label htmlFor="CodServicio">Servicio</Label>
+              <Select id="CodServicio" name="CodServicio" required>
+                <option disabled selected>Seleccionar...</option>
+                {serviciosSuc.data.map((servicio) => (
+                  <option
+                    key={servicio.CodServicio}
+                    value={servicio.CodServicio}
+                    onClick={() => setMontoServicioAct(servicio.MontoServ)}
+                  >
+                    {servicio.NombreServ}
+                  </option>
+                ))}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <Label htmlFor="FechaServicio">Fecha a atender</Label>
+              <TextInput
+                id="FechaServicio"
+                name="FechaServicio"
+                type="datetime-local"
+                required
+              />
+            </fieldset>
+            <fieldset>
+              <Label htmlFor="Abono">
+                Abono (monto del servicio actual: $
+                {montoServicioAct.toLocaleString()})
+              </Label>
+              <TextInput id="Abono" name="Abono" type="number" required />
+            </fieldset>
+            <Button
+              type="submit"
+              name="_action"
+              value="crearReserva"
+              disabled={fetcher.state !== "idle"}
+            >
+              Crear
             </Button>
           </fetcher.Form>
         </Modal.Body>

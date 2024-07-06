@@ -108,3 +108,13 @@ export const fichaTableSchema = z.object({
   TiempoSalEst: z.date(),
   TiempoSalReal: z.date().nullable(),
 });
+
+export const reservaTableSchema = z.object({
+  NumReserva: z.number().int().min(1),
+  FechaReserva: z.date(),
+  FechaServicio: z.date(),
+  Abono: z.number().gte(0),
+  CodVehiculo: z.number().int().min(1),
+  CodServicio: z.number().int().min(1),
+  NombreServ: z.string().min(1).max(20),
+});
