@@ -79,8 +79,10 @@ CREATE TABLE FichasServicios (
 	TiempoSalReal DATETIME,
 	CodVehiculo INT NOT NULL,
 	RIFSucursal VARCHAR(12) NOT NULL,
+	NumReserva INT,
 	FOREIGN KEY (CodVehiculo) REFERENCES Vehiculos(CodVehiculo) ON UPDATE CASCADE,
-	FOREIGN KEY (RIFSucursal) REFERENCES Sucursales(RIFSuc)
+	FOREIGN KEY (RIFSucursal) REFERENCES Sucursales(RIFSuc),
+	FOREIGN KEY (NumReserva) REFERENCES Reservas(NumReserva)
 )
 
 CREATE TABLE LineasSuministro (
@@ -385,6 +387,7 @@ ADD FOREIGN KEY (CICoordinador) REFERENCES Empleados(CIEmpleado)
 ON UPDATE NO ACTION
 
 -- Actualización automática del monto del servicio
+GO
 CREATE TRIGGER SumarMontoServicio
 ON Actividades AFTER INSERT
 AS
@@ -393,6 +396,7 @@ BEGIN
 	SELECT @CodServicio = CodServicio, @CostoHora = CostoHora FROM INSERTED
 	UPDATE Servicios SET MontoServ = MontoServ + @CostoHora WHERE CodServicio = @CodServicio
 END
+GO
 CREATE TRIGGER ActualizarMontoServicio
 ON Actividades AFTER UPDATE
 AS
@@ -405,6 +409,7 @@ BEGIN
 		UPDATE Servicios SET MontoServ = MontoServ + @NuevoCostoHora - @ViejoCostoHora WHERE CodServicio = @CodServicio
 	END
 END
+GO
 CREATE TRIGGER RestarMontoServicio
 ON Actividades AFTER DELETE
 AS
@@ -415,6 +420,7 @@ BEGIN
 END
 
 -- Chequear que el abono de servicio esté entre el 20 y 50% del monto del servicio
+GO
 CREATE TRIGGER CheckAbono
 ON Reservas AFTER INSERT
 AS
@@ -430,6 +436,7 @@ BEGIN
 END
 
 -- El cliente recibe un descuento sobre el servicio en caso de haber cumplido con un mínimo de servicios promedio en los últimos cuatro meses
+GO
 CREATE TRIGGER DescuentoCliente
 ON FacturasServicio AFTER INSERT
 AS
@@ -463,6 +470,7 @@ BEGIN
 END
 
 -- Calcular monto de factura de servicios
+GO
 CREATE TRIGGER MontoFactServicios
 ON FacturasServicio AFTER INSERT
 AS
@@ -479,6 +487,7 @@ BEGIN
 END
 
 -- Calcular monto de factura de la tienda
+GO
 CREATE TRIGGER MontoFactTienda
 ON FacturasTienda AFTER INSERT
 AS
@@ -492,6 +501,7 @@ BEGIN
 END
 
 -- Una factura de servicio admite hasta dos modalidades de pago
+GO
 CREATE TRIGGER CheckNumPagosServicios
 ON PagosServicios AFTER INSERT
 AS
@@ -509,6 +519,7 @@ BEGIN
 END
 
 -- La suma de los montos de los pagos para las facturas de servicio y de tiendas deben igualar el monto total de la factura
+GO
 CREATE TRIGGER SumaPagosServicios
 ON PagosServicios AFTER INSERT
 AS
@@ -530,6 +541,7 @@ BEGIN
         ROLLBACK TRANSACTION
 	END
 END
+GO
 CREATE TRIGGER SumaPagosTienda
 ON PagosTienda AFTER INSERT
 AS
@@ -551,6 +563,7 @@ END
 
 -- Cuando la existencia de un insumo sea igual o menor al mínimo, se incluye en una requisición de compra para su línea al final del día
 -- En esta, la cantidad pedida del insumo lo deja un 25% mayor que el nivel mínimo.
+GO
 CREATE PROCEDURE CrearRequisiciones
 AS
 DECLARE @CursorLineas CURSOR, @CodLineaAct INT, @NumInsumosFaltantes INT, @CodReq INT, @CursorInsumos CURSOR, @CodIns INT, @MinIns INT, @ExistIns INT
@@ -586,6 +599,7 @@ BEGIN
 END
 
 -- No se permite hacer consumos de insumos cuando el inventario no es suficiente
+GO
 CREATE TRIGGER InventarioSuficiente
 ON ActividadesRealizadasConsumen AFTER INSERT
 AS
@@ -607,24 +621,22 @@ END
 GO
 CREATE VIEW ClientesFrecuentesPorSuc
 AS
-SELECT s.RIFSuc, s.NombreSuc, c.CICliente, c.NombreCliente, COUNT(fs.CodFicha) AS TotalServicios
+SELECT fs.RIFSucursal, c.CICliente, c.NombreCliente, COUNT(fs.CodFicha) AS TotalServicios
 FROM Clientes c, Vehiculos v, Sucursales s, FichasServicios fs
 WHERE c.CICliente = v.CIPropietario
 AND fs.CodVehiculo = v.CodVehiculo
-AND fs.RIFSucursal = s.RIFSuc
-GROUP BY s.RIFSuc, s.NombreSuc, c.CICliente, c.NombreCliente
-ORDER BY TotalServicios DESC
+GROUP BY fs.RIFSucursal, c.CICliente, c.NombreCliente
+ORDER BY TotalServicios DESC OFFSET 0 ROWS
 
 -- Producto con mayor/menos salida por ventas
 GO
 CREATE VIEW ArticulosVendidosPorSuc
 AS
-SELECT suc.RIFSuc, suc.NombreSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT, SUM(fIncluyen.Cantidad) AS TotalVentas
-FROM ArticulosTienda aTienda, Sucursales suc, FacturasTiendaIncluyen fIncluyen
-WHERE aTienda.RIFSuc = suc.RIFSuc
-AND fIncluyen.CodArticuloT = aTienda.CodArticuloT
-GROUP BY suc.RIFSuc, suc.NombreSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT
-ORDER BY TotalVentas DESC
+SELECT aTienda.RIFSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT, SUM(fIncluyen.Cantidad) AS TotalVentas
+FROM ArticulosTienda aTienda, FacturasTiendaIncluyen fIncluyen
+WHERE fIncluyen.CodArticuloT = aTienda.CodArticuloT
+GROUP BY aTienda.RIFSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT
+ORDER BY TotalVentas DESC OFFSET 0 ROWS
 
 -- Personal que realiza más/menos servicios por mes
 GO
@@ -636,33 +648,43 @@ WHERE ar.CodFicha = fs.CodFicha
 AND ar.CodServicio = srv.CodServicio
 AND srv.CIEncargado = emp.CIEmpleado
 GROUP BY emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt), MONTH(fs.TiempoEnt)
-ORDER BY TotalServicios DESC
+ORDER BY YEAR(fs.TiempoEnt), MONTH(fs.TiempoEnt), TotalServicios DESC OFFSET 0 ROWS
 
 -- Marca de vehículo más atendida por servicio
 GO
 CREATE VIEW MarcasAtendidasPorServicio
 AS
-SELECT fs.RIFSucursal, srv.NombreServ, mar.NombreMarca, COUNT(DISTINCT fs.CodFicha) AS TotalServicios
+SELECT srv.NombreServ, mar.NombreMarca, COUNT(DISTINCT fs.CodFicha) AS TotalServicios
 FROM FichasServicios fs, Servicios srv, Marcas mar, Vehiculos v, ActividadesRealizadas ar
 WHERE ar.CodFicha = fs.CodFicha
 AND ar.CodServicio = srv.CodServicio
 AND fs.CodVehiculo = v.CodVehiculo
 AND v.CodMarca = mar.CodMarca
-GROUP BY fs.RIFSucursal, srv.NombreServ, mar.NombreMarca
-ORDER BY TotalServicios DESC
+GROUP BY srv.NombreServ, mar.NombreMarca
+HAVING COUNT(DISTINCT fs.CodFicha) = (
+	SELECT TOP 1 * FROM (
+		SELECT COUNT(DISTINCT fs.CodFicha) AS Cuenta
+		FROM FichasServicios fs, Servicios srv, Marcas mar, Vehiculos v, ActividadesRealizadas ar
+		WHERE ar.CodFicha = fs.CodFicha
+		AND ar.CodServicio = srv.CodServicio
+		AND fs.CodVehiculo = v.CodVehiculo
+		AND v.CodMarca = mar.CodMarca
+		ORDER BY Cuenta DESC OFFSET 0 ROWS
+	) t
+)
+ORDER BY TotalServicios DESC OFFSET 0 ROWS
 
 -- Histórico de uso de servicio por vehículo
 GO
 CREATE VIEW HistoricoServiciosPorVehiculo
 AS
-SELECT v.CodVehiculo, v.PlacaVehic, v.CIPropietario, srv.NombreServ, act.DescActividad, fs.TiempoEnt
-FROM Vehiculos v, Servicios srv, FichasServicios fs, ActividadesRealizadas ar, Actividades act
-WHERE v.CodVehiculo = fs.CodVehiculo
-AND ar.CodFicha = fs.CodFicha
+SELECT fs.CodVehiculo, fs.CodFicha, srv.NombreServ, act.DescActividad, fs.TiempoEnt
+FROM Servicios srv, FichasServicios fs, ActividadesRealizadas ar, Actividades act
+WHERE ar.CodFicha = fs.CodFicha
 AND ar.CodServicio = act.CodServicio
 AND ar.CodAct = act.CodActividad
 AND act.CodServicio = srv.CodServicio
-ORDER BY v.CodVehiculo DESC, fs.TiempoEnt DESC
+ORDER BY fs.TiempoEnt DESC OFFSET 0 ROWS
 
 -- Comparación entre los distintos M&M: cual factura más/menos por servicios, por ventas
 GO
@@ -673,7 +695,18 @@ FROM Sucursales suc, FacturasServicio factServ, FichasServicios fs
 WHERE factServ.CodFicha = fs.CodFicha
 AND fs.RIFSucursal = suc.RIFSuc
 GROUP BY suc.RIFSuc, suc.NombreSuc
-ORDER BY TotalFacturado DESC
+ORDER BY TotalFacturado DESC OFFSET 0 ROWS
+
+GO
+CREATE VIEW SucursalesFactTienda
+AS
+SELECT suc.RIFSuc, suc.NombreSuc, COUNT(DISTINCT factTien.CodFTien) AS TotalFacturas, SUM(fti.Cantidad * fti.Precio) AS TotalFacturado
+FROM Sucursales suc, FacturasTienda factTien, FacturasTiendaIncluyen fti, ArticulosTienda aTienda
+WHERE factTien.CodFTien = fti.CodFTien
+AND fti.CodArticuloT = aTienda.CodArticuloT
+AND aTienda.RIFSuc = suc.RIFSuc
+GROUP BY suc.RIFSuc, suc.NombreSuc
+ORDER BY TotalFacturado DESC OFFSET 0 ROWS
 
 -- Servicio más/menos solicitado
 GO
@@ -684,7 +717,7 @@ FROM Servicios srv, FichasServicios fs, ActividadesRealizadas ar
 WHERE fs.CodFicha = ar.CodFicha
 AND ar.CodServicio = srv.CodServicio
 GROUP BY srv.CodServicio, srv.NombreServ
-ORDER BY TotalSolicitudes DESC
+ORDER BY TotalSolicitudes DESC OFFSET 0 ROWS
 
 -- Proveedor que nos suministra más/menos productos
 GO
@@ -695,7 +728,7 @@ FROM Proveedores pro, RequisicionesCompraIncluyen rcIncluyen, OrdenesCompra oc
 WHERE pro.RIFProv = oc.RIFProv
 AND rcIncluyen.CodReq = oc.CodReq
 GROUP BY pro.RIFProv, pro.RazonProv
-ORDER BY TotalSuministrado DESC
+ORDER BY TotalSuministrado DESC OFFSET 0 ROWS
 
 -- Productos ajustados por diferencias en inventario físico
 GO
@@ -704,3 +737,18 @@ AS
 SELECT ins.CodIns, ins.NombreIns, aj.CodAjuste, aj.FechaAjuste, aj.TipoAjuste, aj.ComentarioAjuste, aj.Diferencia
 FROM Insumos ins, AjustesInventario aj
 WHERE aj.CodIns = ins.CodIns
+
+-- Clientes que hacen reservas y después no usan el servicio
+GO
+CREATE VIEW ClientesSuspendenReservas
+AS
+SELECT c.CICliente, c.NombreCliente, COUNT(r.NumReserva) AS ReservasSuspendidas
+FROM Clientes c, Reservas r, Vehiculos v
+WHERE r.CodVehiculo = v.CodVehiculo
+AND c.CICliente = v.CIPropietario
+AND r.FechaServicio > GETDATE()
+AND r.NumReserva NOT IN (
+	SELECT DISTINCT NumReserva FROM FichasServicios
+)
+GROUP BY c.CICliente, c.NombreCliente
+ORDER BY ReservasSuspendidas DESC OFFSET 0 ROWS

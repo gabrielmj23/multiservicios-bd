@@ -118,3 +118,12 @@ export const reservaTableSchema = z.object({
   CodServicio: z.number().int().min(1),
   NombreServ: z.string().min(1).max(20),
 });
+
+export const personalMasAtiendeSchema = z.object({
+  RIFSuc: z.string(),
+  CIEmpleado: z.string(),
+  NombreEmp: z.string(),
+  AñoServ: z.number().int(),
+  MesServ: z.number().int(),
+  TotalServicios: z.number().int(),
+});
