@@ -98,3 +98,13 @@ export const servicioConActividadesSchema = z.object({
   DescActividad: z.string().min(1).max(20).nullable(),
   CostoHora: z.number().gt(0).nullable(),
 });
+
+export const fichaTableSchema = z.object({
+  CodFicha: z.number().int().min(1),
+  CodVehiculo: z.number().int().min(1),
+  CIPropietario: z.string().min(1).max(10),
+  Autorizado: z.string().nullable(),
+  TiempoEnt: z.date(),
+  TiempoSalEst: z.date(),
+  TiempoSalReal: z.date().nullable(),
+});

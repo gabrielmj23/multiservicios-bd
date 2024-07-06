@@ -76,7 +76,7 @@ CREATE TABLE FichasServicios (
 	Autorizado VARCHAR(10),
 	TiempoEnt DATETIME NOT NULL,
 	TiempoSalEst DATETIME NOT NULL,
-	TiempoSalReal DATETIME NOT NULL,
+	TiempoSalReal DATETIME,
 	CodVehiculo INT NOT NULL,
 	RIFSucursal VARCHAR(12) NOT NULL,
 	FOREIGN KEY (CodVehiculo) REFERENCES Vehiculos(CodVehiculo) ON UPDATE CASCADE,

@@ -2,6 +2,7 @@ import { handleError } from "./common.server";
 import sql from "mssql";
 import { sqlConfig } from "./connectDb.server";
 import { vehiculoConForaneosSchema } from "./schemas";
+import { z } from "zod";
 
 export async function getVehiculosConModelo() {
   try {
@@ -17,6 +18,35 @@ export async function getVehiculosConModelo() {
     const vehiculos = await Promise.all(
       result.recordset.map(
         async (vehiculo) => await vehiculoConForaneosSchema.parseAsync(vehiculo)
+      )
+    );
+    return { type: "success" as const, data: vehiculos };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function getVehiculoParaFicha(RIFSuc: string) {
+  try {
+    await sql.connect(sqlConfig);
+    const result = await sql.query`
+      SELECT v.CodVehiculo, v.PlacaVehic
+      FROM Vehiculos v, Modelos mo
+      WHERE v.CodModelo = mo.CodModelo
+      AND mo.CodTipo IN (
+        SELECT CodTipo
+        FROM SucursalesAtiendenVehiculos
+        WHERE RIFSucursal = ${RIFSuc}
+      )
+    `;
+    const vehiculos = await Promise.all(
+      result.recordset.map((vehiculo) =>
+        z
+          .object({
+            CodVehiculo: z.number().int(),
+            PlacaVehic: z.string(),
+          })
+          .parseAsync(vehiculo)
       )
     );
     return { type: "success" as const, data: vehiculos };

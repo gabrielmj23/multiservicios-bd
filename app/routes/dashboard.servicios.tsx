@@ -10,12 +10,14 @@ import {
   Label,
   Modal,
   Select,
+  Table,
   Tabs,
   TextInput,
 } from "flowbite-react";
 import { useState } from "react";
 import { getSession } from "~/session";
 import { getEmpleados } from "~/utils/empleados.server";
+import { addFicha, getFichas } from "~/utils/fichas.server";
 import {
   addActividad,
   addServicio,
@@ -23,6 +25,7 @@ import {
   getServiciosDeSucursal,
   ofrecerServicio,
 } from "~/utils/servicios.server";
+import { getVehiculoParaFicha } from "~/utils/vehiculos.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -37,6 +40,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     serviciosSuc: await getServiciosDeSucursal(RIFSuc),
     servicios: await getServicios(),
     empleados: await getEmpleados(RIFSuc),
+    fichas: await getFichas(RIFSuc),
+    vehiculos: await getVehiculoParaFicha(RIFSuc),
   };
 }
 
@@ -58,21 +63,27 @@ export async function action({ request }: ActionFunctionArgs) {
       return await addActividad(formData);
     case "ofrecerServ":
       return await ofrecerServicio(formData, RIFSuc);
+    case "crearFicha":
+      return await addFicha(formData, RIFSuc);
   }
 }
 
 export default function DashboardServicios() {
-  const { serviciosSuc, servicios, empleados } = useLoaderData<typeof loader>();
+  const { serviciosSuc, servicios, empleados, fichas, vehiculos } =
+    useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [codServicioAgg, setCodServicioAgg] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingAct, setIsCreatingAct] = useState(false);
   const [isOffering, setIsOffering] = useState(false);
+  const [isCreatingFicha, setIsCreatingFicha] = useState(false);
 
   if (
     servicios.type === "error" ||
     serviciosSuc.type === "error" ||
-    empleados.type === "error"
+    empleados.type === "error" ||
+    fichas.type === "error" ||
+    vehiculos.type === "error"
   ) {
     return (
       <div className="p-6">
@@ -80,6 +91,8 @@ export default function DashboardServicios() {
         <p>{serviciosSuc.type === "error" ? serviciosSuc.message : null}</p>
         <p>{servicios.type === "error" ? servicios.message : null}</p>
         <p>{empleados.type === "error" ? empleados.message : null}</p>
+        <p>{fichas.type === "error" ? fichas.message : null}</p>
+        <p>{vehiculos.type === "error" ? vehiculos.message : null}</p>
       </div>
     );
   }
@@ -152,7 +165,48 @@ export default function DashboardServicios() {
             ))}
           </Accordion>
         </Tabs.Item>
-        <Tabs.Item title="Fichas de servicio"></Tabs.Item>
+        <Tabs.Item title="Fichas de servicio">
+          <Button
+            type="button"
+            className="mb-2"
+            onClick={() => setIsCreatingFicha(true)}
+          >
+            Solicitar servicio
+          </Button>
+          <Table>
+            <Table.Head>
+              <Table.HeadCell>Código de ficha</Table.HeadCell>
+              <Table.HeadCell>Código de vehículo</Table.HeadCell>
+              <Table.HeadCell>CI de propietario</Table.HeadCell>
+              <Table.HeadCell>Autorizado para el retiro</Table.HeadCell>
+              <Table.HeadCell>Fecha de entrada</Table.HeadCell>
+              <Table.HeadCell>Fecha estimada de salida</Table.HeadCell>
+              <Table.HeadCell>Fecha de salida</Table.HeadCell>
+            </Table.Head>
+            <Table.Body>
+              {fichas.data.map((ficha) => (
+                <Table.Row key={ficha.CodFicha}>
+                  <Table.Cell>{ficha.CodFicha}</Table.Cell>
+                  <Table.Cell>{ficha.CodVehiculo}</Table.Cell>
+                  <Table.Cell>{ficha.CIPropietario}</Table.Cell>
+                  <Table.Cell>{ficha.Autorizado}</Table.Cell>
+                  <Table.Cell>
+                    {new Date(ficha.TiempoEnt).toLocaleDateString()}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {new Date(ficha.TiempoSalEst).toLocaleDateString()}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {ficha.TiempoSalReal
+                      ? new Date(ficha.TiempoSalReal).toLocaleDateString()
+                      : null}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </Tabs.Item>
+        <Tabs.Item title="Reservas"></Tabs.Item>
       </Tabs>
       <Modal show={isOffering} onClose={() => setIsOffering(false)}>
         <Modal.Header>Ofrecer servicios</Modal.Header>
@@ -303,6 +357,53 @@ export default function DashboardServicios() {
               disabled={fetcher.state !== "idle"}
             >
               Agregar
+            </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal show={isCreatingFicha} onClose={() => setIsCreatingFicha(false)}>
+        <Modal.Header>Solicitar servicio</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post">
+            <fieldset>
+              <Label htmlFor="CodVehiculo">Vehículo</Label>
+              <Select id="CodVehiculo" name="CodVehiculo" required>
+                {vehiculos.data.map((vehiculo) => (
+                  <option
+                    key={vehiculo.CodVehiculo}
+                    value={vehiculo.CodVehiculo}
+                  >
+                    {vehiculo.CodVehiculo} - Placa: {vehiculo.PlacaVehic}
+                  </option>
+                ))}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <Label htmlFor="Autorizado">Autorizado para el retiro</Label>
+              <TextInput id="Autorizado" name="Autorizado" />
+            </fieldset>
+            <fieldset className="grid grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="TiempoEnt">Fecha de entrada</Label>
+                <TextInput
+                  id="TiempoEnt"
+                  name="TiempoEnt"
+                  type="datetime-local"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="TiempoSalEst">Fecha de salida estimada</Label>
+                <TextInput
+                  id="TiempoSalEst"
+                  name="TiempoSalEst"
+                  type="datetime-local"
+                  required
+                />
+              </div>
+            </fieldset>
+            <Button type="submit" name="_action" value="crearFicha">
+              Solicitar
             </Button>
           </fetcher.Form>
         </Modal.Body>
