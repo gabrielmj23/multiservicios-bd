@@ -14,6 +14,7 @@ import {
   getEmpleados,
   hacerEncargado,
 } from "~/utils/empleados.server";
+import { editarSucursal } from "~/utils/sucursales.server";
 import { empleadoSchema } from "~/utils/schemas";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 /*
@@ -74,10 +75,10 @@ export async function loader() {
         },
       ]
     },
-    message: "Datos cargados con éxito",
+    message: "",
   };
 }
-
+/*
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = String(formData.get("_action"));
@@ -98,6 +99,26 @@ export async function action({ request }: ActionFunctionArgs) {
       return await editarEmpleado(formData);
   }
 }
+*/
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const action = String(formData.get("_action"));
+  const session = await getSession(request.headers.get("Cookie"));
+  if (!session || session.has("error")) {
+    return redirect("/");
+  }
+  const RIFSuc = session.get("RIFSuc");
+  if (!RIFSuc) {
+    return redirect("/");
+  }
+  switch (action) {
+    case "editarSucursal":
+      return await editarSucursal(formData);
+    default:
+      // Manejar acciones no reconocidas o mostrar un mensaje de error
+      return { error: "Acción no reconocida" };
+  }
+}
 
 export default function DashboardEmpleados() {
   const empleados = useLoaderData<typeof loader>();
@@ -109,10 +130,10 @@ export default function DashboardEmpleados() {
   > | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);  
 
   // Función para manejar el clic en "Seleccionar", que actualiza el empleado seleccionado y abre el modal
-  const handleSeleccionarClick = (empleado) => {
+  const handleSeleccionarClick = (empleado: any) => {
     setEmpleadoSeleccionado(empleado);
     setOpenModal(true);
   };
@@ -165,11 +186,19 @@ export default function DashboardEmpleados() {
                                 ¿Quieres convertir a {empleadoSeleccionado.NombreEmp} en el encargado de la sucursal?
                             </h3>
                             <div className="flex justify-center gap-4">
-                                <Button color="failure" onClick={() => setOpenModal(false)}>
-                                {"Si, Confirmar"}
+                                <Button color="failure" onClick={() => 
+                                  {fetcher.submit(
+                                      {
+                                        _action: "editarSucursal",
+                                        RIFSuc: sucursal.data.RIFSuc,
+                                        CIEmpleado: empleadoSeleccionado.CIEmpleado
+                                      },
+                                      { method: "post" }
+                                    );setOpenModal(false)}}>
+                                  {"Si, Confirmar"}
                                 </Button>
                                 <Button color="gray" onClick={() => setOpenModal(false)}>
-                                No, Cancelar
+                                  No, Cancelar
                                 </Button>
                             </div>
                             </div>
