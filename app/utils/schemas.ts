@@ -206,3 +206,11 @@ export const facturaTiendaIncluyenSchema = z.object({
   Cantidad: z.number().int().positive(),
   Precio: z.number().positive(),
 });
+
+export const facturaServicioSchema = z.object({
+  CodFServ: z.number().int().positive(),
+  FechaFServ: z.date(),
+  MontoFServ: z.number(),
+  PorcDcto: z.number().nullable(),
+  CodFicha: z.number().int().positive(),
+});

@@ -18,6 +18,10 @@ nav {
   box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.5);
 }
 
+tr {
+  @apply bg-white;
+}
+
 nav > a {
   @apply font-semibold hover:drop-shadow-xl text-lg;
 }

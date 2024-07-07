@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { getSession } from "~/session";
 import { getCedulas } from "~/utils/clientes.server";
+import { getFacturasServicio } from "~/utils/facturasServicio.server";
 import {
   crearFacturaYArticulos,
   getArticulosTienda,
@@ -39,7 +40,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return {
     articulos: await getArticulosTienda(RIFSuc),
     cedulas: await getCedulas(),
-    facturas: await getFacturasTienda(RIFSuc),
+    facturasTienda: await getFacturasTienda(RIFSuc),
+    facturasServicio: await getFacturasServicio(RIFSuc),
   };
 }
 
@@ -77,7 +79,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function DashboardFacturas() {
-  const { articulos, cedulas, facturas } = useLoaderData<typeof loader>();
+  const { articulos, cedulas, facturasTienda, facturasServicio } =
+    useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const navigate = useNavigate();
   const [isCreatingFTienda, setIsCreatingFTienda] = useState(false);
@@ -91,14 +94,18 @@ export default function DashboardFacturas() {
   if (
     articulos.type === "error" ||
     cedulas.type === "error" ||
-    facturas.type === "error"
+    facturasTienda.type === "error" ||
+    facturasServicio.type === "error"
   ) {
     return (
       <div className="p-6">
         <h1>Facturas de la Tienda</h1>
         <p>{articulos.type === "error" ? articulos.message : null}</p>
         <p>{cedulas.type === "error" ? cedulas.message : null}</p>
-        <p>{facturas.type === "error" ? facturas.message : null}</p>
+        <p>{facturasTienda.type === "error" ? facturasTienda.message : null}</p>
+        <p>
+          {facturasServicio.type === "error" ? facturasServicio.message : null}
+        </p>
       </div>
     );
   }
@@ -127,7 +134,38 @@ export default function DashboardFacturas() {
     <div className="p-6">
       <h1>Facturas</h1>
       <Tabs>
-        <Tabs.Item title="De servicios"></Tabs.Item>
+        <Tabs.Item title="De servicios">
+          {facturasServicio.data.length > 0 ? (
+            <Table hoverable>
+              <Table.Head>
+                <Table.HeadCell>Código</Table.HeadCell>
+                <Table.HeadCell>Fecha</Table.HeadCell>
+                <Table.HeadCell>Hora</Table.HeadCell>
+                <Table.HeadCell>Monto</Table.HeadCell>
+                <Table.HeadCell>Descuento aplicado</Table.HeadCell>
+                <Table.HeadCell># ficha de servicio</Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
+                {facturasServicio.data.map((factura) => (
+                  <Table.Row key={factura.CodFServ}>
+                    <Table.Cell>{factura.CodFServ}</Table.Cell>
+                    <Table.Cell>
+                      {new Date(factura.FechaFServ).toLocaleDateString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(factura.FechaFServ).toLocaleTimeString()}
+                    </Table.Cell>
+                    <Table.Cell>${factura.MontoFServ.toLocaleString()}</Table.Cell>
+                    <Table.Cell>{factura.PorcDcto || 0}%</Table.Cell>
+                    <Table.Cell>{factura.CodFicha}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          ) : (
+            <p>No se han solicitado servicios</p>
+          )}
+        </Tabs.Item>
         <Tabs.Item title="De la tienda">
           <div className="flex items-center mb-2">
             <Button
@@ -138,7 +176,7 @@ export default function DashboardFacturas() {
               Nueva factura
             </Button>
           </div>
-          {facturas.data.length > 0 ? (
+          {facturasTienda.data.length > 0 ? (
             <Table hoverable className="min-w-fit">
               <Table.Head>
                 <Table.HeadCell>Factura</Table.HeadCell>
@@ -148,27 +186,25 @@ export default function DashboardFacturas() {
                 <Table.HeadCell>Monto total</Table.HeadCell>
               </Table.Head>
               <Table.Body className="bg-gray-100">
-                {facturas &&
-                  facturas.data &&
-                  facturas.data.map((factura) => (
-                    <Table.Row
-                      key={factura.CodFTien}
-                      className="bg-white hover:cursor-pointer"
-                      onClick={() => navigate(`tienda/${factura.CodFTien}`)}
-                    >
-                      <Table.Cell>{factura.CodFTien}</Table.Cell>
-                      <Table.Cell>
-                        {new Date(factura.FechaFTien).toLocaleDateString()}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {new Date(factura.FechaFTien).toLocaleTimeString()}
-                      </Table.Cell>
-                      <Table.Cell>{factura.CICliente}</Table.Cell>
-                      <Table.Cell>
-                        ${factura.MontoFTien.toLocaleString()}
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
+                {facturasTienda.data.map((factura) => (
+                  <Table.Row
+                    key={factura.CodFTien}
+                    className="bg-white hover:cursor-pointer"
+                    onClick={() => navigate(`tienda/${factura.CodFTien}`)}
+                  >
+                    <Table.Cell>{factura.CodFTien}</Table.Cell>
+                    <Table.Cell>
+                      {new Date(factura.FechaFTien).toLocaleDateString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(factura.FechaFTien).toLocaleTimeString()}
+                    </Table.Cell>
+                    <Table.Cell>{factura.CICliente}</Table.Cell>
+                    <Table.Cell>
+                      ${factura.MontoFTien.toLocaleString()}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
               </Table.Body>
             </Table>
           ) : (
