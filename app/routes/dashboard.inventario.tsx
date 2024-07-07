@@ -7,6 +7,8 @@ import {
   editLinea,
   deleteInsumo,
   deleteLinea,
+  getInventariosFisicos,
+  addInventarioFisico,
 } from "../utils/inventario.server";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
@@ -24,10 +26,12 @@ import { insumoSchema, lineaSchema } from "~/utils/schemas";
 import { z } from "zod";
 import { ActionFunctionArgs } from "@remix-run/node";
 import toast from "react-hot-toast";
+
 export async function loader() {
   return {
     insumos: await getInsumos(),
     lineas: await getLineas(),
+    inventariosFisicos: await getInventariosFisicos(),
   };
 }
 
@@ -44,14 +48,16 @@ export async function action({ request }: ActionFunctionArgs) {
       return await addLinea(formData);
     case "editarLinea":
       return await editLinea(formData);
-    case "eliminarLinea": {
+    case "eliminarLinea":
       return await deleteLinea(formData);
-    }
+    case "nuevoInventario":
+      return await addInventarioFisico(formData);
   }
 }
 
 export default function DashboardInventario() {
-  const { insumos, lineas } = useLoaderData<typeof loader>();
+  const { insumos, lineas, inventariosFisicos } =
+    useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const [nuevoInsumoModalOpen, setNuevoInsumoModalOpen] = useState(false);
   const [esEco, setEsEco] = useState(false);
@@ -59,19 +65,23 @@ export default function DashboardInventario() {
   const [insumoEditando, setInsumoEditando] = useState<z.infer<
     typeof insumoSchema
   > | null>(null);
+  const [eliminarInsumoModalOpen, setEliminarInsumoModalOpen] = useState(false);
+  const [insumoEliminando, setInsumoEliminando] = useState<z.infer<
+    typeof insumoSchema
+  > | null>(null);
+
   const [nuevoLineaModalOpen, setNuevoLineaModalOpen] = useState(false);
   const [editLineaModalOpen, setEditLineaModalOpen] = useState(false);
   const [lineaEditando, setLineaEditando] = useState<z.infer<
     typeof lineaSchema
   > | null>(null);
-  const [eliminarInsumoModalOpen, setEliminarInsumoModalOpen] = useState(false);
-  const [insumoEliminando, setInsumoEliminando] = useState<z.infer<
-    typeof insumoSchema
-  > | null>(null);
   const [eliminarLineaModalOpen, setEliminarLineaModalOpen] = useState(false);
   const [lineaEliminando, setLineaEliminando] = useState<z.infer<
     typeof lineaSchema
   > | null>(null);
+
+  const [nuevoInventarioModalOpen, setNuevoInventarioModalOpen] =
+    useState(false);
 
   const handleSelectChange = (linea) => (e) => {
     const selectedAction = e.target.value;
@@ -96,12 +106,21 @@ export default function DashboardInventario() {
     }
   };
 
-  if (insumos.type === "error" || lineas.type === "error") {
+  if (
+    insumos.type === "error" ||
+    lineas.type === "error" ||
+    inventariosFisicos.type === "error"
+  ) {
     return (
       <div>
         <h1>Inventario</h1>
         <p>{insumos.type === "error" ? insumos.message : null}</p>
         <p>{lineas.type === "error" ? lineas.message : null}</p>
+        <p>
+          {inventariosFisicos.type === "error"
+            ? inventariosFisicos.message
+            : null}
+        </p>
       </div>
     );
   }
@@ -583,6 +602,94 @@ export default function DashboardInventario() {
                 Cancelar
               </Button>
             </div>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      {inventariosFisicos.data.length === 0 ? (
+        <>
+          <p>No hay inventarios fisicos todavía</p>
+          <Button
+            type="button"
+            className="mt-2"
+            onClick={() => setNuevoInventarioModalOpen(true)}
+          >
+            Registra el primer inventario fisico
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            type="button"
+            className="my-2"
+            onClick={() => setNuevoInventarioModalOpen(true)}
+          >
+            Nuevo inventario fisico
+          </Button>
+          <Table hoverable className="min-w-fit">
+            <Table.Head>
+              <Table.HeadCell>Id</Table.HeadCell>
+              <Table.HeadCell>Fecha</Table.HeadCell>
+              <Table.HeadCell>Código de insumo</Table.HeadCell>
+              <Table.HeadCell>Cantidad</Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="bg-white">
+              {inventariosFisicos.data.map((inventario) => (
+                <Table.Row key={inventario.IdInv}>
+                  <Table.Cell>{inventario.IdInv}</Table.Cell>
+                  <Table.Cell>
+                    {new Date(inventario.FechaInv).toLocaleDateString()}
+                  </Table.Cell>
+                  <Table.Cell>{inventario.CodIns}</Table.Cell>
+                  <Table.Cell>{inventario.Cantidad}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </>
+      )}
+      <Modal
+        show={nuevoInventarioModalOpen}
+        onClose={() => setNuevoInventarioModalOpen(false)}
+      >
+        <Modal.Header>Nuevo inventario fisico</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post">
+            <fieldset>
+              <label htmlFor="Fecha">Fecha</label>
+              <TextInput
+                type="date"
+                id="Fecha"
+                name="Fecha"
+                placeholder="fecha"
+              />
+            </fieldset>
+            <fieldset>
+              <label htmlFor="CodIns">Insumo</label>
+              <Select name="CodIns" id="CodIns" required>
+                {insumos.data.map((insumo) => (
+                  <option key={insumo.CodIns} value={insumo.CodIns}>
+                    {insumo.NombreIns}
+                  </option>
+                ))}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <label htmlFor="Cantidad">Cantidad</label>
+              <TextInput
+                type="number"
+                id="Cantidad"
+                name="Cantidad"
+                placeholder="1"
+              />
+            </fieldset>
+            <Button
+              type="submit"
+              name="_action"
+              value="nuevoInventario"
+              disabled={fetcher.state !== "idle"}
+            >
+              Crear
+            </Button>
           </fetcher.Form>
         </Modal.Body>
       </Modal>

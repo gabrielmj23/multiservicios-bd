@@ -183,6 +183,14 @@ CREATE TABLE Descuentos (
 	FOREIGN KEY (RIFSuc) REFERENCES Sucursales(RIFSuc) ON UPDATE CASCADE
 )
 
+CREATE TABLE InventariosFisicos (
+	IdInv INT IDENTITY(1,1) PRIMARY KEY,
+	FechaInv DATE NOT NULL,
+	CodIns INT FOREIGN KEY REFERENCES Insumos(CodIns) not null,
+	Cantidad INT NOT NULL,
+	CHECK (Cantidad >= 0)
+)
+
 CREATE TABLE AjustesInventario (
 	CodAjuste INT IDENTITY(1,1) PRIMARY KEY,
 	FechaAjuste DATETIME NOT NULL,
@@ -652,6 +660,29 @@ BEGIN
 	END
 	ELSE
 		UPDATE Insumos SET ExistIns = @ExistIns - @Cantidad WHERE CodIns = @CodInsumo
+END
+
+-- Hacer ajuste de inventario en caso de requerirlo
+GO
+CREATE TRIGGER CrearAjuste
+ON InventariosFisicos AFTER INSERT
+AS
+BEGIN
+	DECLARE @CodIns INT, @ExistIns INT, @Cantidad INT, @FechaInv DATE
+	SELECT @CodIns = CodIns, @Cantidad = Cantidad, @FechaInv = FechaInv FROM INSERTED
+	SELECT @ExistIns = ExistIns FROM Insumos WHERE CodIns = @CodIns
+	IF @ExistIns < @Cantidad
+	BEGIN
+		INSERT INTO AjustesInventario(FechaAjuste, TipoAjuste, ComentarioAjuste, CodIns, Diferencia)
+		VALUES (@FechaInv, 'S', 'Insumo sobrante', @CodIns, @Cantidad - @ExistIns)
+		UPDATE Insumos SET ExistIns = @Cantidad WHERE CodIns = @CodIns
+	END
+	ELSE IF @ExistIns > @Cantidad
+	BEGIN
+		INSERT INTO AjustesInventario(FechaAjuste, TipoAjuste, ComentarioAjuste, CodIns, Diferencia)
+		VALUES (@FechaInv, 'F', 'Insumo faltante', @CodIns, @ExistIns - @Cantidad)
+		UPDATE Insumos SET ExistIns = @Cantidad WHERE CodIns = @CodIns
+	END
 END
 
 -- ESTAD�STICAS
