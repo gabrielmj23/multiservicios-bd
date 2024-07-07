@@ -33,11 +33,11 @@ export const lineaSchema = z.object({
   NombreLinea: z.string().min(1).max(30),
 });
 
-export const articuloSchema = z.object({
-  CodArticuloT: z.number().int().min(1),
-  NombreArticuloT: z.string().min(1).max(30),
-  Precio: z.number().gt(0),
-  RIFSuc: z.string().min(1).max(12),
+export const InventariosFisicosSchema = z.object({
+  Id: z.number().int().min(1).optional(),
+  Fecha: z.date(),
+  CodIns: z.number().int().min(1),
+  Cantidad: z.number().int().min(0),
 });
 
 export const clienteSchema = z.object({

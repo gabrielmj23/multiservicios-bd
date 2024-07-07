@@ -1,15 +1,16 @@
-import {getInsumos, addInsumo, editInsumo, getLineas, addLinea, editLinea, deleteInsumo, deleteLinea} from '../utils/inventario.server'
+import {getInsumos, addInsumo, editInsumo, getLineas, addLinea, editLinea, deleteInsumo, deleteLinea, getInventariosFisicos,addInventarioFisico} from '../utils/inventario.server'
 import {json} from '@remix-run/react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
-import { insumoSchema, lineaSchema } from '~/utils/schemas';
+import { insumoSchema, lineaSchema, InventariosFisicosSchema } from '~/utils/schemas';
 import { set, z } from 'zod';
 import { ActionFunctionArgs } from '@remix-run/node';
 export async function loader() {
     return {
         insumos: await getInsumos(),
         lineas: await getLineas(),
+        inventariosFisicos: await getInventariosFisicos(),
     }
 }
 
@@ -28,12 +29,14 @@ export async function action( {request} : ActionFunctionArgs) {
             return await editLinea(formData);
         case "eliminarLinea":{console.log("Eliminando", formData.CodLinea)
             return await deleteLinea(formData);}
+        case "nuevoInventario":
+            return await addInventarioFisico(formData);
     }
 }
 
 
 export default function DashboardInventario() {
-    const { insumos, lineas } = useLoaderData<typeof loader>();
+    const { insumos, lineas ,inventariosFisicos} = useLoaderData<typeof loader>();
     const fetcher = useFetcher();
     const [nuevoInsumoModalOpen, setNuevoInsumoModalOpen] = useState(false);
     const [editInsumoModalOpen, setEditInsumoModalOpen] = useState(false);
@@ -53,6 +56,7 @@ export default function DashboardInventario() {
     const [lineaEliminando, setLineaEliminando] = useState<z.infer<
         typeof lineaSchema
     > | null>(null);
+    const [nuevoInventarioModalOpen, setNuevoInventarioModalOpen] = useState(false);
 
     const handleSelectChange = (linea) => (e) => {
         const selectedAction = e.target.value;
@@ -77,7 +81,7 @@ export default function DashboardInventario() {
         }
     };
 
-    if (insumos.type === "error" || lineas.type === "error") {
+    if (insumos.type === "error" || lineas.type === "error" || inventariosFisicos.type ==="error") {
         return (
           <div>
             <h1>Inventario</h1>
@@ -564,6 +568,92 @@ export default function DashboardInventario() {
         </fetcher.Form>
     </Modal.Body>
         </Modal> 
+        {inventariosFisicos.data.length === 0 ? (
+            <>
+                <p>No hay inventarios fisicos todavía</p>
+                <Button
+                    type="button"
+                    className="mt-2"
+                    onClick={() => setNuevoInventarioModalOpen(true)}
+                >
+                    Registra el primer inventario fisico
+                </Button>
+            </>
+        ) : (
+            <>
+                <Button
+                    type="button"
+                    className="my-2"
+                    onClick={() => setNuevoInventarioModalOpen(true)}
+                >
+                    Nuevo inventario fisico
+                </Button>
+                <Table hoverable className="min-w-fit">
+                    <Table.Head>
+                        <Table.HeadCell>Id</Table.HeadCell>
+                        <Table.HeadCell>Fecha</Table.HeadCell>
+                        <Table.HeadCell>CodIns</Table.HeadCell>
+                        <Table.HeadCell>Cantidad</Table.HeadCell>
+                    </Table.Head>
+                    <Table.Body className="bg-white">
+                        {inventariosFisicos.data.map((inventario) => (
+                            <Table.Row key = {inventario.Id}>
+                                <Table.Cell>{inventario.Id}</Table.Cell>
+                                <Table.Cell>{inventario.Fecha.slice(0,10)}</Table.Cell>
+                                <Table.Cell>{inventario.CodIns}</Table.Cell>
+                                <Table.Cell>{inventario.Cantidad}</Table.Cell>
+                            </Table.Row>
+                        ))}
+                    </Table.Body>
+                </Table>
+            </>
+        )}
+        <Modal
+            show={nuevoInventarioModalOpen}
+            onClose={() => setNuevoInventarioModalOpen(false)}
+        >
+            <Modal.Header>Nuevo inventario fisico</Modal.Header>
+            <Modal.Body>
+                <fetcher.Form method="post">
+                    <fieldset>
+                        <label htmlFor="Fecha">Fecha</label>
+                        <TextInput
+                            type="date"
+                            id="Fecha"
+                            name="Fecha"
+                            placeholder="fecha"
+                        />
+                    </fieldset>
+                    <fieldset>
+                        <label htmlFor="CodIns">Código de insumo</label>
+                        <TextInput
+                            type="number"
+                            id="CodIns"
+                            name="CodIns"
+                            placeholder="1"
+                        />
+                    </fieldset>
+                    <fieldset>
+                        <label htmlFor="Cantidad">Cantidad</label>
+                        <TextInput
+                            type="number"
+                            id="Cantidad"
+                            name="Cantidad"
+                            placeholder="1"
+                        />
+                    </fieldset>
+                    <Button
+                        type="submit"
+                        name="_action"
+                        value="nuevoInventario"
+                        disabled={fetcher.state !== "idle"}
+                    >
+                        Crear
+                    </Button>
+                </fetcher.Form>
+            </Modal.Body>
+        </Modal>
+        
         </div>
     );
 }

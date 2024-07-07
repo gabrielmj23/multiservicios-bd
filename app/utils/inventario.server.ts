@@ -1,8 +1,50 @@
 import {json} from "@remix-run/react";
 import sql from "mssql";
 import {sqlConfig} from "./connectDb.server"
-import {lineaSchema, insumoSchema} from "./schemas";
+import {lineaSchema, insumoSchema, InventariosFisicosSchema} from "./schemas";
 import {handleError} from "./common.server";
+
+export async function getInventariosFisicos() {
+    try {
+        await sql.connect(sqlConfig);
+        const result = await sql.query`SELECT * FROM InventariosFisicos`;
+        const parsedResults = await Promise.all(
+            result.recordset.map(
+                async (inventario) => await InventariosFisicosSchema.parseAsync(inventario)
+            )
+        );
+        return {
+            type: "success" as const,
+            data: parsedResults,
+        };
+    } catch (error) {
+        return handleError(error);
+    }
+
+}
+
+export async function addInventarioFisico(formData: FormData){
+    try {
+        let inventario = {
+            Fecha: new Date(formData.get("Fecha") as string),
+            CodIns: Number(formData.get("CodIns")),
+            Cantidad: Number(formData.get("Cantidad")),
+        };
+        inventario = InventariosFisicosSchema.parse(inventario);
+        await sql.connect(sqlConfig);
+        await sql.query`
+            INSERT INTO InventariosFisicos (Fecha, CodIns, Cantidad)
+            VALUES (${inventario.Fecha}, ${inventario.CodIns}, ${inventario.Cantidad})
+        `;
+        return {
+            type: "success" as const,
+            message: "Inventario físico agregado correctamente",
+        };
+    } catch (error){
+        return handleError(error);
+    }
+}
+
 export async function getInsumos() {
     try {
         await sql.connect(sqlConfig);
