@@ -14,12 +14,12 @@ export const meta: MetaFunction = () => {
 
 export default function Dashboard() {
   return (
-    <div className="bg-orange-100 h-screen">
+    <div className="bg-orange-100">
       <header className="bg-[#A4D279] py-3 px-12 flex items-center gap-8">
         <img src="/logo.png" alt="logo" className="h-20" />
         <span className="text-4xl font-bold">Multiservicios Mundial</span>
       </header>
-      <div className="flex">
+      <div className="flex min-h-screen">
         <nav className="flex flex-col gap-6 bg-gray-300 py-6 px-10 max-w-fit min-h-full sticky">
           <Link to="/dashboard">
             <span>

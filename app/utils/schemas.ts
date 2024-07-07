@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export type DBResponseType =
@@ -25,11 +24,10 @@ export const insumoSchema = z.object({
   MaxIns: z.number().int().min(0),
   UMedida: z.string().min(1).max(10),
   CodLinea: z.number().int().min(1),
-
 });
 
 export const lineaSchema = z.object({
-  CodLinea: z.number().int().min(1).optional(),
+  CodLinea: z.number().int().min(1),
   NombreLinea: z.string().min(1).max(30),
 });
 
