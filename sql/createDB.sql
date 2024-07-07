@@ -148,8 +148,9 @@ CREATE TABLE FacturasTienda (
 	CodFTien INT IDENTITY(1,1) PRIMARY KEY,
 	FechaFTien DATETIME NOT NULL,
 	CICliente VARCHAR(10) NOT NULL,
-	MontoFTien DECIMAL(6,2) NOT NULL,
+	MontoFTien DECIMAL(6,2) DEFAULT 0,
 	FOREIGN KEY (CICliente) REFERENCES Clientes(CICliente) ON UPDATE CASCADE
+	
 )
 
 CREATE TABLE FacturasServicio (
@@ -374,6 +375,10 @@ ALTER TABLE Sucursales
 ADD FOREIGN KEY (CIEncargado) REFERENCES Empleados(CIEmpleado)
 ON UPDATE NO ACTION
 
+ALTER TABLE FacturasTienda
+ADD RIFSuc VARCHAR(15),
+FOREIGN KEY (RIFSuc) REFERENCES Sucursales(RIFSuc) ON UPDATE NO ACTION;
+
 ALTER TABLE Vehiculos
 ADD FOREIGN KEY (CodMarca, CodModelo) REFERENCES Modelos(CodMarca, CodModelo)
 ON UPDATE CASCADE
@@ -386,8 +391,10 @@ ALTER TABLE Servicios
 ADD FOREIGN KEY (CICoordinador) REFERENCES Empleados(CIEmpleado)
 ON UPDATE NO ACTION
 
--- Actualización automática del monto del servicio
-GO
+ALTER TABLE FacturasTienda
+ADD CONSTRAINT DF_MontoFTien DEFAULT 0 FOR MontoFTien;
+
+-- Actualizaciï¿½n automï¿½tica del monto del servicio
 CREATE TRIGGER SumarMontoServicio
 ON Actividades AFTER INSERT
 AS
@@ -419,7 +426,7 @@ BEGIN
 	UPDATE Servicios SET MontoServ = MontoServ - @CostoHora WHERE CodServicio = @CodServicio
 END
 
--- Chequear que el abono de servicio esté entre el 20 y 50% del monto del servicio
+-- Chequear que el abono de servicio estï¿½ entre el 20 y 50% del monto del servicio
 GO
 CREATE TRIGGER CheckAbono
 ON Reservas AFTER INSERT
@@ -435,7 +442,7 @@ BEGIN
     END
 END
 
--- El cliente recibe un descuento sobre el servicio en caso de haber cumplido con un mínimo de servicios promedio en los últimos cuatro meses
+-- El cliente recibe un descuento sobre el servicio en caso de haber cumplido con un mï¿½nimo de servicios promedio en los ï¿½ltimos cuatro meses
 GO
 CREATE TRIGGER DescuentoCliente
 ON FacturasServicio AFTER INSERT
@@ -446,7 +453,7 @@ BEGIN
 	SELECT @CICliente = v.CIPropietario
 	FROM INSERTED i, FichasServicios f, Vehiculos v
 	WHERE i.CodFicha = f.CodFicha AND f.CodVehiculo = v.CodVehiculo
-	-- Determinar cantidad de servicios promedio en los últimos cuatro meses
+	-- Determinar cantidad de servicios promedio en los ï¿½ltimos cuatro meses
 	DECLARE @ServPromedio DECIMAL(3, 1)
 	SELECT @ServPromedio = AVG(cuenta) FROM (
 		SELECT COUNT(*) AS cuenta
@@ -520,15 +527,15 @@ END
 -- Calcular monto de factura de la tienda
 GO
 CREATE TRIGGER MontoFactTienda
-ON FacturasTienda AFTER INSERT
+ON FacturasTiendaIncluyen AFTER INSERT
 AS
 BEGIN
-	DECLARE @CodFTien INT, @MontoFact DECIMAL(6,2)
-	SELECT @CodFTien = i.CodFTien, @MontoFact = SUM(fti.Cantidad * fti.Precio)
-	FROM INSERTED i, FacturasTiendaIncluyen fti
-	WHERE i.CodFTien = fti.CodFTien
-	GROUP BY i.CodFTien
-	UPDATE FacturasTienda SET MontoFTien = @MontoFact WHERE CodFTien = @CodFTien
+    DECLARE @CodFTien INT, @MontoFact DECIMAL(6,2)
+    SELECT @CodFTien = i.CodFTien, @MontoFact = SUM(fti.Cantidad * fti.Precio)
+    FROM INSERTED i
+    INNER JOIN FacturasTiendaIncluyen fti ON i.CodFTien = fti.CodFTien
+    GROUP BY i.CodFTien
+    UPDATE FacturasTienda SET MontoFTien = @MontoFact WHERE CodFTien = @CodFTien
 END
 
 -- Una factura de servicio admite hasta dos modalidades de pago
@@ -544,7 +551,7 @@ BEGIN
 	WHERE CodFactura = @CodFInserted
 	IF @NumPagos > 2
 	BEGIN
-		RAISERROR ('La orden ya tiene el máximo de pagos', 16, 1)
+		RAISERROR ('La orden ya tiene el mï¿½ximo de pagos', 16, 1)
         ROLLBACK TRANSACTION
 	END
 END
@@ -592,8 +599,8 @@ BEGIN
 	END
 END
 
--- Cuando la existencia de un insumo sea igual o menor al mínimo, se incluye en una requisición de compra para su línea al final del día
--- En esta, la cantidad pedida del insumo lo deja un 25% mayor que el nivel mínimo.
+-- Cuando la existencia de un insumo sea igual o menor al mï¿½nimo, se incluye en una requisiciï¿½n de compra para su lï¿½nea al final del dï¿½a
+-- En esta, la cantidad pedida del insumo lo deja un 25% mayor que el nivel mï¿½nimo.
 GO
 CREATE PROCEDURE CrearRequisiciones
 AS
@@ -610,11 +617,11 @@ BEGIN
 		AND ExistIns <= MinIns
 		IF @NumInsumosFaltantes > 0
 		BEGIN
-			-- Crear requisición para esta línea
+			-- Crear requisiciï¿½n para esta lï¿½nea
 			INSERT INTO RequisicionesCompra (FechaReq, CodLinea)
 			VALUES (CURRENT_TIMESTAMP, @CodLineaAct)
 			SELECT @CodReq = SCOPE_IDENTITY()
-			-- Conectar requisición con insumos
+			-- Conectar requisiciï¿½n con insumos
 			SET @CursorInsumos = CURSOR FOR SELECT CodIns, MinIns, ExistIns FROM Insumos WHERE CodLinea = @CodLineaAct AND ExistIns <= MinIns
 			OPEN @CursorInsumos
 			FETCH NEXT FROM @CursorInsumos INTO @CodIns, @MinIns, @ExistIns
@@ -647,10 +654,10 @@ BEGIN
 		UPDATE Insumos SET ExistIns = @ExistIns - @Cantidad WHERE CodIns = @CodInsumo
 END
 
--- ESTADÍSTICAS
--- Cliente más / menos frecuente
+-- ESTADï¿½STICAS
+-- Cliente mï¿½s / menos frecuente
 -- Esta vista guarda la cantidad de servicios solicitados por cada cliente a cada sucursal
--- Es responsabilidad de la aplicación filtrar por sucursal y ordenar para tomar el mayor / menor
+-- Es responsabilidad de la aplicaciï¿½n filtrar por sucursal y ordenar para tomar el mayor / menor
 GO
 CREATE VIEW ClientesFrecuentesPorSuc
 AS
@@ -671,11 +678,11 @@ WHERE fIncluyen.CodArticuloT = aTienda.CodArticuloT
 GROUP BY aTienda.RIFSuc, aTienda.CodArticuloT, aTienda.NombreArticuloT
 ORDER BY TotalVentas DESC OFFSET 0 ROWS
 
--- Personal que realiza más/menos servicios por mes
+-- Personal que realiza mï¿½s/menos servicios por mes
 GO
 CREATE VIEW PersonalRealizaServiciosPorMes
 AS
-SELECT emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt) AS AñoServ, MONTH(fs.TiempoEnt) AS MesServ, COUNT(DISTINCT ar.CodServicio) AS TotalServicios
+SELECT emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt) AS Aï¿½oServ, MONTH(fs.TiempoEnt) AS MesServ, COUNT(DISTINCT ar.CodServicio) AS TotalServicios
 FROM Empleados emp, FichasServicios fs, ActividadesRealizadas ar, Servicios srv
 WHERE ar.CodFicha = fs.CodFicha
 AND ar.CodServicio = srv.CodServicio
@@ -683,7 +690,7 @@ AND srv.CIEncargado = emp.CIEmpleado
 GROUP BY emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt), MONTH(fs.TiempoEnt)
 ORDER BY YEAR(fs.TiempoEnt), MONTH(fs.TiempoEnt), TotalServicios DESC OFFSET 0 ROWS
 
--- Marca de vehículo más atendida por servicio
+-- Marca de vehï¿½culo mï¿½s atendida por servicio
 GO
 CREATE VIEW MarcasAtendidasPorServicio
 AS
@@ -707,7 +714,7 @@ HAVING COUNT(DISTINCT fs.CodFicha) = (
 )
 ORDER BY TotalServicios DESC OFFSET 0 ROWS
 
--- Histórico de uso de servicio por vehículo
+-- Histï¿½rico de uso de servicio por vehï¿½culo
 GO
 CREATE VIEW HistoricoServiciosPorVehiculo
 AS
@@ -719,7 +726,7 @@ AND ar.CodAct = act.CodActividad
 AND act.CodServicio = srv.CodServicio
 ORDER BY fs.TiempoEnt DESC OFFSET 0 ROWS
 
--- Comparación entre los distintos M&M: cual factura más/menos por servicios, por ventas
+-- Comparaciï¿½n entre los distintos M&M: cual factura mï¿½s/menos por servicios, por ventas
 GO
 CREATE VIEW SucursalesFactServicios
 AS
@@ -741,7 +748,7 @@ AND aTienda.RIFSuc = suc.RIFSuc
 GROUP BY suc.RIFSuc, suc.NombreSuc
 ORDER BY TotalFacturado DESC OFFSET 0 ROWS
 
--- Servicio más/menos solicitado
+-- Servicio mï¿½s/menos solicitado
 GO
 CREATE VIEW ServiciosMasSolicitados
 AS
@@ -752,7 +759,7 @@ AND ar.CodServicio = srv.CodServicio
 GROUP BY srv.CodServicio, srv.NombreServ
 ORDER BY TotalSolicitudes DESC OFFSET 0 ROWS
 
--- Proveedor que nos suministra más/menos productos
+-- Proveedor que nos suministra mï¿½s/menos productos
 GO
 CREATE VIEW ProveedorMasSuministros
 AS
@@ -763,7 +770,7 @@ AND rcIncluyen.CodReq = oc.CodReq
 GROUP BY pro.RIFProv, pro.RazonProv
 ORDER BY TotalSuministrado DESC OFFSET 0 ROWS
 
--- Productos ajustados por diferencias en inventario físico
+-- Productos ajustados por diferencias en inventario fï¿½sico
 GO
 CREATE VIEW InsumosAjustados
 AS
@@ -771,7 +778,7 @@ SELECT ins.CodIns, ins.NombreIns, aj.CodAjuste, aj.FechaAjuste, aj.TipoAjuste, a
 FROM Insumos ins, AjustesInventario aj
 WHERE aj.CodIns = ins.CodIns
 
--- Clientes que hacen reservas y después no usan el servicio
+-- Clientes que hacen reservas y despuï¿½s no usan el servicio
 GO
 CREATE VIEW ClientesSuspendenReservas
 AS
