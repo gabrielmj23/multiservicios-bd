@@ -229,15 +229,12 @@ export default function DashboardSucursal() {
       {sucursal.data.CIEncargado ? (
         <div>
           <h2 className="mb-2">Tipos de vehículo que atendemos:</h2>
-          <div className="flex space-x-4">
+          <div className="flex justify-evenly">
             <div className="overflow-x-auto">
               <h3 className="font-semibold">Atendidos</h3>
               <Table>
                 <Table.Head>
                   <Table.HeadCell>Nombre</Table.HeadCell>
-                  <Table.HeadCell>
-                    <span className="sr-only">Agregar</span>
-                  </Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y">
                   {tiposSucursal.data.map((tipo) => (
@@ -247,17 +244,6 @@ export default function DashboardSucursal() {
                     >
                       <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                         {tipo.NombreTipo}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault(); // Previene la navegación
-                            handleSeleccionarClickTipo(tipo);
-                          }}
-                          className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                        >
-                          Agregar
-                        </button>
                       </Table.Cell>
                     </Table.Row>
                   ))}

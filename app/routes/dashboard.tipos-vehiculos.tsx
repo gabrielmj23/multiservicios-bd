@@ -46,7 +46,7 @@ export default function DashboardTipos() {
           </Button>
           <ul className="ps-6 pt-2">
             {tipos.data.map((tipo) => (
-              <li key={tipo.CodTipo} className="list-disc">{tipo.NombreTipo}</li>
+              <li key={tipo.CodTipo} className="list-disc text-lg">{tipo.NombreTipo}</li>
             ))}
           </ul>
         </>
