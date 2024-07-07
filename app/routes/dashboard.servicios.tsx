@@ -3,7 +3,7 @@ import {
   LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import {
   Accordion,
   Button,
@@ -76,6 +76,7 @@ export default function DashboardServicios() {
   const { serviciosSuc, servicios, empleados, fichas, vehiculos, reservas } =
     useLoaderData<typeof loader>();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
   const [codServicioAgg, setCodServicioAgg] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingAct, setIsCreatingAct] = useState(false);
@@ -111,11 +112,15 @@ export default function DashboardServicios() {
       <Tabs>
         <Tabs.Item title="Ver servicios">
           <div className="flex justify-start gap-4 mb-6">
-            <Button className="max-w-xs" type="button" onClick={() => setIsCreating(true)}>
+            <Button
+              className="max-w-xs"
+              type="button"
+              onClick={() => setIsCreating(true)}
+            >
               Nuevo servicio
             </Button>
             <Button
-            className="max-w-xs"
+              className="max-w-xs"
               type="button"
               color="success"
               onClick={() => setIsOffering(true)}
@@ -194,7 +199,11 @@ export default function DashboardServicios() {
             </Table.Head>
             <Table.Body>
               {fichas.data.map((ficha) => (
-                <Table.Row key={ficha.CodFicha}>
+                <Table.Row
+                  key={ficha.CodFicha}
+                  className="bg-white hover:cursor-pointer"
+                  onClick={() => navigate(`/dashboard/fichas/${ficha.CodFicha}`)}
+                >
                   <Table.Cell>{ficha.CodFicha}</Table.Cell>
                   <Table.Cell>{ficha.CodVehiculo}</Table.Cell>
                   <Table.Cell>{ficha.CIPropietario}</Table.Cell>
@@ -479,7 +488,9 @@ export default function DashboardServicios() {
             <fieldset>
               <Label htmlFor="CodServicio">Servicio</Label>
               <Select id="CodServicio" name="CodServicio" required>
-                <option disabled selected>Seleccionar...</option>
+                <option disabled selected>
+                  Seleccionar...
+                </option>
                 {serviciosSuc.data.map((servicio) => (
                   <option
                     key={servicio.CodServicio}

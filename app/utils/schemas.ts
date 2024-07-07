@@ -170,4 +170,18 @@ export const sucursalSchema = z.object({
   CiudadSuc: z.string().min(1).max(30),
   CIEncargado: z.string().min(1).max(10).nullable(),
   FechaInicioEncargado: z.date().nullable(),
-})
+});
+
+export const actividadesRealizadasSchema = z.object({
+  CodServicio: z.number().int(),
+  CodAct: z.number().int(),
+  DescActividad: z.string(),
+  NumRealizada: z.number().int(),
+  PrecioHora: z.number(),
+  Tiempo: z.number(),
+  CodInsumo: z.number().int().nullable(),
+  NombreIns: z.string().nullable(),
+  CIEmpleado: z.string().nullable(),
+  Cantidad: z.number().int().nullable(),
+  Precio: z.number().nullable(),
+});

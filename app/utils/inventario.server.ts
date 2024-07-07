@@ -3,13 +3,22 @@ import sql from "mssql";
 import { sqlConfig } from "./connectDb.server";
 import { lineaSchema, insumoSchema } from "./schemas";
 import { handleError } from "./common.server";
+import { z } from "zod";
+
 export async function getInsumos() {
   try {
     await sql.connect(sqlConfig);
     const result = await sql.query`SELECT * FROM Insumos`;
     const parsedResults = await Promise.all(
       result.recordset.map(
-        async (insumo) => await insumoSchema.parseAsync(insumo)
+        async (insumo) =>
+          await insumoSchema
+            .extend(
+              {
+                CodIns: z.number().int(),
+              }
+            )
+            .parseAsync(insumo)
       )
     );
 

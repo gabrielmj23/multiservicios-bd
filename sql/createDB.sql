@@ -1,7 +1,6 @@
 CREATE DATABASE MultiserviciosMundial
 USE MultiserviciosMundial
-select * from Empleados
-select * from Sucursales
+
 CREATE TABLE Sucursales (
 	RIFSuc VARCHAR(12) PRIMARY KEY,
 	NombreSuc VARCHAR(20) NOT NULL,
@@ -351,7 +350,7 @@ CREATE TABLE ActividadesRealizadasConsumen (
 	CodFicha INT NOT NULL,
 	CodServicio INT NOT NULL,
 	CodAct INT NOT NULL,
-	NumRealizada INT IDENTITY(1,1) NOT NULL,
+	NumRealizada INT NOT NULL,
 	CodInsumo INT NOT NULL,
 	CIEmpleado VARCHAR(10) NOT NULL,
 	Cantidad INT NOT NULL,
@@ -472,19 +471,50 @@ END
 
 -- Calcular monto de factura de servicios
 GO
-CREATE TRIGGER MontoFactServicios
-ON FacturasServicio AFTER INSERT
+CREATE TRIGGER MontoManoDeObra
+ON ActividadesRealizadas AFTER INSERT
 AS
 BEGIN
+	DECLARE @CostoMO DECIMAL(6,2), @CodFicha INT
+	SELECT @CostoMO = PrecioHora * Tiempo, @CodFicha = CodFicha
+	FROM INSERTED
+	
 	DECLARE @CodFServ INT, @MontoFact DECIMAL(6,2), @PorcDcto DECIMAL(6,2)
-	SELECT @CodFServ = i.CodFServ, @PorcDcto = i.PorcDcto, @MontoFact = SUM(a.PrecioHora * a.Tiempo)
-	FROM INSERTED i, ActividadesRealizadas a
-	WHERE i.CodFServ = a.CodFicha
-	GROUP BY i.CodFServ, i.PorcDcto
+	SELECT @CodFServ = CodFServ, @MontoFact = MontoFServ, @PorcDcto = PorcDcto
+	FROM FacturasServicio
+	WHERE CodFicha = @CodFicha
+
 	IF @PorcDcto <> NULL
-		UPDATE FacturasServicio SET MontoFServ = @MontoFact * (1 - @PorcDcto) WHERE CodFServ = @CodFServ
+		UPDATE FacturasServicio
+		SET MontoFServ = @MontoFact + @CostoMO * (1- @PorcDcto)
+		WHERE CodFServ = @CodFServ
 	ELSE
-		UPDATE FacturasServicio SET MontoFServ = @MontoFact WHERE CodFServ = @CodFServ
+		UPDATE FacturasServicio
+		SET MontoFServ = @MontoFact + @CostoMO
+		WHERE CodFServ = @CodFServ
+END
+GO
+CREATE TRIGGER CalcCostoRecursos
+ON ActividadesRealizadasConsumen AFTER INSERT
+AS
+BEGIN
+	DECLARE @CostoRec DECIMAL(6,2), @CodFicha INT
+	SELECT @CostoRec = Cantidad * Precio, @CodFicha = CodFicha
+	FROM INSERTED
+
+	DECLARE @CodFServ INT, @MontoFact DECIMAL(6,2), @PorcDcto DECIMAL(6,2)
+	SELECT @CodFServ = CodFServ, @MontoFact = MontoFServ, @PorcDcto = PorcDcto
+	FROM FacturasServicio
+	WHERE CodFicha = @CodFicha
+
+	IF @PorcDcto <> NULL
+		UPDATE FacturasServicio
+		SET MontoFServ = @MontoFact + @CostoRec * (1- @PorcDcto)
+		WHERE CodFServ = @CodFServ
+	ELSE
+		UPDATE FacturasServicio
+		SET MontoFServ = @MontoFact + @CostoRec
+		WHERE CodFServ = @CodFServ
 END
 
 -- Calcular monto de factura de la tienda
@@ -605,14 +635,16 @@ CREATE TRIGGER InventarioSuficiente
 ON ActividadesRealizadasConsumen AFTER INSERT
 AS
 BEGIN
-	DECLARE @CodInsumo INT, @MinIns INT, @ExistIns INT
-	SELECT @CodInsumo = CodInsumo FROM INSERTED
+	DECLARE @CodInsumo INT, @MinIns INT, @ExistIns INT, @Cantidad INT
+	SELECT @CodInsumo = CodInsumo, @Cantidad = Cantidad FROM INSERTED
 	SELECT @MinIns = MinIns, @ExistIns = ExistIns FROM Insumos WHERE CodIns = @CodInsumo
-	IF @ExistIns <= @MinIns
+	IF @ExistIns - @Cantidad <= @MinIns
 	BEGIN
 		RAISERROR ('No hay inventario suficiente de este insumo', 16, 1)
         ROLLBACK TRANSACTION
 	END
+	ELSE
+		UPDATE Insumos SET ExistIns = @ExistIns - @Cantidad WHERE CodIns = @CodInsumo
 END
 
 -- ESTADÍSTICAS
