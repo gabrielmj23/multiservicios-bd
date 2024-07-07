@@ -118,7 +118,7 @@ export default function DashboardArticulosTienda() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Crear artículo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
             <fieldset>
               <Label htmlFor="NombreArticuloT">Nombre del artículo</Label>
               <TextInput
@@ -146,7 +146,7 @@ export default function DashboardArticulosTienda() {
       <Modal show={isEditing} onClose={() => setIsEditing(false)}>
         <Modal.Header>Editar artículo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsEditing(false)}>
             <input
               type="hidden"
               name="CodArticuloT"

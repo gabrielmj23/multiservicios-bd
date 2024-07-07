@@ -150,7 +150,7 @@ export default function DashboardEmpleados() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Registrar empleado</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
             <fieldset>
               <Label htmlFor="CIEmpleado">Cédula</Label>
               <TextInput
@@ -201,7 +201,7 @@ export default function DashboardEmpleados() {
       <Modal show={isEditing} onClose={() => setIsEditing(false)}>
         <Modal.Header>Editar empleado</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsEditing(false)}>
             <fieldset>
               <Label htmlFor="CIEmpleado">Cédula</Label>
               <TextInput

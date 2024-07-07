@@ -222,7 +222,7 @@ export default function DashboardFacturas() {
           >
             <Modal.Header>Crear Nueva Factura</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setIsCreatingFTienda(false)}>
                 <Button
                   type="submit"
                   name="_action"

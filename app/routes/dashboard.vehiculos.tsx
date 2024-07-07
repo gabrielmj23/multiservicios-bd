@@ -130,7 +130,7 @@ export default function DashboardVehiculos() {
       >
         <Modal.Header>Nuevo vehículo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setNuevoVehiculoModalOpen(false)}>
             <fieldset>
               <Label htmlFor="PlacaVehic">Número de placa</Label>
               <TextInput type="text" id="PlacaVehic" name="PlacaVehic" />
@@ -208,7 +208,7 @@ export default function DashboardVehiculos() {
       >
         <Modal.Header>Editar cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setEditVehiculoModalOpen(false)}>
             <fieldset>
               <Label htmlFor="PlacaVehic">Número de placa</Label>
               <TextInput

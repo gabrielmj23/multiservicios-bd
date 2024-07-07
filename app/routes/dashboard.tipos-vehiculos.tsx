@@ -54,7 +54,7 @@ export default function DashboardTipos() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Nuevo tipo de vehículo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
             <fieldset>
               <Label htmlFor="NombreTipo">Nombre del tipo</Label>
               <TextInput id="NombreTipo" name="NombreTipo" type="text" />

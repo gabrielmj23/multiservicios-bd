@@ -263,7 +263,7 @@ export default function DashboardServicios() {
       <Modal show={isOffering} onClose={() => setIsOffering(false)}>
         <Modal.Header>Ofrecer servicios</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsOffering(false)}>
             <fieldset>
               <Label htmlFor="CodServicio">Servicio</Label>
               <Select id="CodServicio" name="CodServicio" required>
@@ -314,7 +314,7 @@ export default function DashboardServicios() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Nuevo servicio</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post"  onSubmit={() => setIsCreating(false)}>
             <fieldset>
               <Label htmlFor="NombreServ">Nombre del servicio</Label>
               <TextInput
@@ -382,7 +382,7 @@ export default function DashboardServicios() {
       <Modal show={isCreatingAct} onClose={() => setIsCreatingAct(false)}>
         <Modal.Header>Agregar actividad</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreatingAct(false)}>
             <fieldset>
               <Label htmlFor="DescActividad">Descripción de la actividad</Label>
               <TextInput
@@ -416,7 +416,7 @@ export default function DashboardServicios() {
       <Modal show={isCreatingFicha} onClose={() => setIsCreatingFicha(false)}>
         <Modal.Header>Solicitar servicio</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreatingFicha(false)}>
             <fieldset>
               <Label htmlFor="CodVehiculo">Vehículo</Label>
               <Select id="CodVehiculo" name="CodVehiculo" required>
@@ -471,7 +471,7 @@ export default function DashboardServicios() {
       >
         <Modal.Header>Crear reserva</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreatingReserva(false)}>
             <fieldset>
               <Label htmlFor="CodVehiculo">Vehículo</Label>
               <Select id="CodVehiculo" name="CodVehiculo" required>

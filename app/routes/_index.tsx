@@ -73,7 +73,7 @@ export default function Index() {
           <Modal show={isCreating} onClose={() => setIsCreating(false)}>
             <Modal.Header>Registrar sucursal</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
                 <fieldset>
                   <Label htmlFor="RIFSuc">RIF</Label>
                   <TextInput

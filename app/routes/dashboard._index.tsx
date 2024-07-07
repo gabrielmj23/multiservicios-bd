@@ -195,7 +195,7 @@ export default function DashboardSucursal() {
                       encargado de la sucursal?
                     </h3>
                     <div className="flex justify-center gap-4">
-                      <fetcher.Form method="post">
+                      <fetcher.Form method="post" onSubmit={() => setOpenModal(false)}>
                         <input
                           type="hidden"
                           name="RIFSuc"
@@ -354,7 +354,7 @@ export default function DashboardSucursal() {
                           {tipoSeleccionado.NombreTipo} en la sucursal?
                         </h3>
                         <div className="flex justify-center gap-4">
-                          <fetcher.Form method="post">
+                          <fetcher.Form method="post" onSubmit={() => setOpenModal(false)}>
                             <input
                               type="hidden"
                               name="RIFSuc"
