@@ -1,6 +1,7 @@
 CREATE DATABASE MultiserviciosMundial
 USE MultiserviciosMundial
-
+select * from Empleados
+select * from Sucursales
 CREATE TABLE Sucursales (
 	RIFSuc VARCHAR(12) PRIMARY KEY,
 	NombreSuc VARCHAR(20) NOT NULL,

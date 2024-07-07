@@ -163,3 +163,11 @@ export const proveedorSchema = z.object({
   PersonaCont: z.string(),
   CodLinea: z.number().int(),
 });
+
+export const sucursalSchema = z.object({
+  RIFSuc: z.string().min(1).max(12),
+  NombreSuc: z.string().min(1).max(20),
+  CiudadSuc: z.string().min(1).max(30),
+  CIEncargado: z.string().min(1).max(10).nullable(),
+  FechaInicioEncargado: z.date().nullable(),
+})

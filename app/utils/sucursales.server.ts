@@ -2,6 +2,7 @@ import { handleError } from "./common.server";
 import sql from "mssql";
 import { sqlConfig } from "./connectDb.server";
 import { z } from "zod";
+import { sucursalSchema } from "./schemas";
 
 export async function getSucursalesInicio() {
   try {
@@ -45,18 +46,25 @@ export async function editarSucursal(formData: FormData) {
   try {
     const RIFSuc = String(formData.get("RIFSuc"));
     const CIEncargado = String(formData.get("CIEncargado"));
+    console.log({ RIFSuc, CIEncargado });
 
     await sql.connect(sqlConfig);
     const result = await sql.query`
       UPDATE Sucursales
-      SET CIEncargado = ${CIEncargado}, FechadeIngreso = GETDATE()
+      SET CIEncargado = ${CIEncargado}, FechaInicioEncargado = GETDATE()
       WHERE RIFSuc = ${RIFSuc}
     `;
 
     if (result.rowsAffected[0] > 0) {
-      return { type: "success", message: "Sucursal actualizada correctamente." };
+      return {
+        type: "success" as const,
+        message: "Sucursal actualizada correctamente.",
+      };
     } else {
-      return { type: "error", message: "No se encontró la sucursal para actualizar." };
+      return {
+        type: "error" as const,
+        message: "No se encontró la sucursal para actualizar.",
+      };
     }
   } catch (error) {
     return handleError(error);
@@ -67,14 +75,15 @@ export async function getSucursal(RIFSuc: string) {
   try {
     await sql.connect(sqlConfig);
     const result = await sql.query`
-      SELECT RIFSuc, NombreSuc, CiudadSuc, CIEncargado, FechadeIngreso
+      SELECT *
       FROM Sucursales
       WHERE RIFSuc = ${RIFSuc}
     `;
     if (result.recordset.length === 0) {
-      return { type: "error", message: "No se encontró la sucursal." };
+      return { type: "error" as const, message: "No se encontró la sucursal." };
     }
-    return { type: "success", data: result.recordset[0] };
+    const sucursal = sucursalSchema.parse(result.recordset[0]);
+    return { type: "success" as const, data: sucursal };
   } catch (error) {
     return handleError(error);
   }

@@ -43,7 +43,7 @@ export async function getTiposNoS(RIFSuc: string) {
             FROM TiposVehiculos
             WHERE CodTipo NOT IN (SELECT tv.CodTipo
                                   FROM TiposVehiculos tv, SucursalesAtiendenVehiculos sav
-                                  WHERE  tv.CodTipo = sav.CodTipo AND sav.RIFSuc = ${RIFSuc})
+                                  WHERE  tv.CodTipo = sav.CodTipo AND sav.RIFSucursal = ${RIFSuc})
         `;
     const tipos = await Promise.all(
       result.recordset.map(
@@ -59,12 +59,17 @@ export async function getTiposNoS(RIFSuc: string) {
 export async function getTiposSucursal(RIFSuc: string) {
   try {
     await sql.connect(sqlConfig);
-    await sql.query`
-                SELECT tv.CodTipo, tv.Nombre
+    const resultas = await sql.query`
+                SELECT tv.CodTipo, tv.NombreTipo
                 FROM TiposVehiculos tv, SucursalesAtiendenVehiculos sav
-                WHERE  tv.CodTipo = sav.CodTipo AND sav.RIFSuc = ${RIFSuc}
+                WHERE  tv.CodTipo = sav.CodTipo AND sav.RIFSucursal = ${RIFSuc}
             `;
-    return { type: "success" as const, message: "Creado con éxito" };
+    const tipos = await Promise.all(
+      resultas.recordset.map(
+        async (tipo) => await tipoVehiculoSchema.parseAsync(tipo)
+      )
+    );
+    return { type: "success" as const, data: tipos };
   } catch (error) {
     return handleError(error);
   }
@@ -90,7 +95,7 @@ export async function agregarSucursalesAtiendenVehiculos(formData: FormData) {
     const RIFSuc = String(formData.get("RIFSuc"));
     const CodTipo = String(formData.get("CodTipo"));
     await sql.query`
-                INSERT INTO SucursalesAtiendenVehiculos (RIFSuc, CodTipo) VALUES (${RIFSuc}, ${CodTipo})
+                INSERT INTO SucursalesAtiendenVehiculos (RIFSucursal, CodTipo) VALUES (${RIFSuc}, ${CodTipo})
             `;
     return { type: "success" as const, message: "Creado con éxito" };
   } catch (error) {
