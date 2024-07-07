@@ -33,10 +33,8 @@ export async function addSucursal(formData: FormData) {
     };
     await sql.connect(sqlConfig);
     await sql.query`
-        EXECUTE AS USER = 'Administrador'
           INSERT INTO Sucursales (RIFSuc, NombreSuc, CiudadSuc)
           VALUES (${sucursal.RIFSuc}, ${sucursal.NombreSuc}, ${sucursal.CiudadSuc})
-        REVERT
         `;
     return { type: "success" as const, message: "Sucursal creada con éxito" };
   } catch (error) {

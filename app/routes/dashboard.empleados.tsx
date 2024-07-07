@@ -6,6 +6,7 @@ import {
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { getSession } from "~/session";
 import {
@@ -51,7 +52,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardEmpleados() {
   const empleados = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingEmpleado, setEditingEmpleado] = useState<z.infer<
     typeof empleadoSchema
@@ -66,6 +67,13 @@ export default function DashboardEmpleados() {
       </div>
     );
   }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
+  }
+
   return (
     <div className="p-6">
       <h1>Empleados de esta sucursal</h1>

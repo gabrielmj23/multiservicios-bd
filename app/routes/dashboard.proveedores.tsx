@@ -2,6 +2,7 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { getLineas } from "~/utils/inventario.server";
 import {
@@ -33,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardProveedores() {
   const { proveedores, lineas } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [provEditing, setProvEditing] = useState<z.infer<
@@ -49,6 +50,12 @@ export default function DashboardProveedores() {
         <p>{lineas.type === "error" ? lineas.message : null}</p>
       </div>
     );
+  }
+  
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (

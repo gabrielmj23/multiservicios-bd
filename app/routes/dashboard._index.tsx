@@ -16,6 +16,7 @@ import {
   agregarSucursalesAtiendenVehiculos,
   eliminarSucursalesAtiendenVehiculos,
 } from "~/utils/tipos.server";
+import toast from "react-hot-toast";
 
 type Empleado = {
   RIFSuc: string;
@@ -70,14 +71,14 @@ export async function action({ request }: ActionFunctionArgs) {
       return await agregarSucursalesAtiendenVehiculos(formData);
     default:
       // Manejar acciones no reconocidas o mostrar un mensaje de error
-      return { error: "Acción no reconocida" };
+      return { type: "error" as const, message: "Acción no reconocida" };
   }
 }
 
 export default function DashboardSucursal() {
   const { sucursal, empleados, tipos, tiposSucursal } =
     useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [openModal, setOpenModal] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] =
     useState<Empleado | null>(null);
@@ -116,6 +117,12 @@ export default function DashboardSucursal() {
     setTipoSeleccionado(tipo);
     setOpenModal(true);
   };
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
+  }
 
   return (
     <div className="p-6">

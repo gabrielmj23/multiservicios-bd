@@ -2,6 +2,7 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { addTipo, getTipos } from "~/utils/tipos.server";
 
 export async function loader() {
@@ -16,11 +17,18 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function DashboardTipos() {
   const tipos = useLoaderData<typeof loader>();
   const [isCreating, setIsCreating] = useState(false);
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
 
   if (tipos.type === "error") {
     return <div className="p-6">{tipos.message}</div>;
   }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
+  }
+
   return (
     <div className="p-6">
       <h1>Tipos de Vehículos</h1>
@@ -46,7 +54,9 @@ export default function DashboardTipos() {
           </Button>
           <ul className="ps-6 pt-2">
             {tipos.data.map((tipo) => (
-              <li key={tipo.CodTipo} className="list-disc text-lg">{tipo.NombreTipo}</li>
+              <li key={tipo.CodTipo} className="list-disc text-lg">
+                {tipo.NombreTipo}
+              </li>
             ))}
           </ul>
         </>
@@ -59,7 +69,9 @@ export default function DashboardTipos() {
               <Label htmlFor="NombreTipo">Nombre del tipo</Label>
               <TextInput id="NombreTipo" name="NombreTipo" type="text" />
             </fieldset>
-            <Button type="submit">Guardar</Button>
+            <Button type="submit" disabled={fetcher.state !== "idle"}>
+              Guardar
+            </Button>
           </fetcher.Form>
         </Modal.Body>
       </Modal>

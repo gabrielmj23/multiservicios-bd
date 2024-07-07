@@ -23,6 +23,7 @@ import {
 import { insumoSchema, lineaSchema } from "~/utils/schemas";
 import { z } from "zod";
 import { ActionFunctionArgs } from "@remix-run/node";
+import toast from "react-hot-toast";
 export async function loader() {
   return {
     insumos: await getInsumos(),
@@ -51,7 +52,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardInventario() {
   const { insumos, lineas } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [nuevoInsumoModalOpen, setNuevoInsumoModalOpen] = useState(false);
   const [esEco, setEsEco] = useState(false);
   const [editInsumoModalOpen, setEditInsumoModalOpen] = useState(false);
@@ -103,6 +104,12 @@ export default function DashboardInventario() {
         <p>{lineas.type === "error" ? lineas.message : null}</p>
       </div>
     );
+  }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (

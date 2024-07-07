@@ -2,6 +2,7 @@ import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form, redirect, useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { commitSession, getSession } from "~/session";
 import { addSucursal, getSucursalesInicio } from "~/utils/sucursales.server";
 
@@ -36,7 +37,13 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Index() {
   const { sucursales } = useLoaderData<typeof loader>();
   const [isCreating, setIsCreating] = useState(false);
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
+  }
   return (
     <div
       id="login-container"

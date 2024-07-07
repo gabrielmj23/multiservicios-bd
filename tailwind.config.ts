@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import * as flowbite from "flowbite-react/tailwind";
 
 export default {
+  darkMode: "selector",
   content: ["./app/**/*.{js,jsx,ts,tsx}", flowbite.content()],
   theme: {
     fontSize: {

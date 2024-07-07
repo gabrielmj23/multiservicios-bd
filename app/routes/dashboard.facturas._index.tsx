@@ -14,6 +14,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { getSession } from "~/session";
 import { getCedulas } from "~/utils/clientes.server";
 import { getFacturasServicio } from "~/utils/facturasServicio.server";
@@ -81,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function DashboardFacturas() {
   const { articulos, cedulas, facturasTienda, facturasServicio } =
     useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
   const [isCreatingFTienda, setIsCreatingFTienda] = useState(false);
   const [cantidades, setCantidades] = useState<
@@ -108,6 +109,12 @@ export default function DashboardFacturas() {
         </p>
       </div>
     );
+  }
+  
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   const handleCantidadChange = (CodArticuloT: number, value: number) => {

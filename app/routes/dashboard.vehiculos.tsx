@@ -2,6 +2,7 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { getCedulas } from "~/utils/clientes.server";
 import { getMarcasSoloConModelos } from "~/utils/marcas.server";
@@ -32,7 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardVehiculos() {
   const { vehiculos, marcas, cedulas } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [marcaSelec, setMarcaSelec] = useState<number | null>(null);
   const [nuevoVehiculoModalOpen, setNuevoVehiculoModalOpen] = useState(false);
   const [editVehiculoModalOpen, setEditVehiculoModalOpen] = useState(false);
@@ -53,6 +54,12 @@ export default function DashboardVehiculos() {
         <p>{cedulas.type === "error" ? cedulas.message : null}</p>
       </div>
     );
+  }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (
@@ -280,7 +287,11 @@ export default function DashboardVehiculos() {
                 ))}
               </Select>
             </fieldset>
-            <input type="hidden" name="CodVehiculo" value={vehiculoEditando?.CodVehiculo} />
+            <input
+              type="hidden"
+              name="CodVehiculo"
+              value={vehiculoEditando?.CodVehiculo}
+            />
             <Button
               type="submit"
               name="_action"

@@ -15,6 +15,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { getSession } from "~/session";
 import { getEmpleados } from "~/utils/empleados.server";
 import { addFicha, getFichas } from "~/utils/fichas.server";
@@ -75,7 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function DashboardServicios() {
   const { serviciosSuc, servicios, empleados, fichas, vehiculos, reservas } =
     useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
   const [codServicioAgg, setCodServicioAgg] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
@@ -104,6 +105,12 @@ export default function DashboardServicios() {
         <p>{reservas.type === "error" ? reservas.message : null}</p>
       </div>
     );
+  }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (
@@ -202,7 +209,9 @@ export default function DashboardServicios() {
                 <Table.Row
                   key={ficha.CodFicha}
                   className="bg-white hover:cursor-pointer"
-                  onClick={() => navigate(`/dashboard/fichas/${ficha.CodFicha}`)}
+                  onClick={() =>
+                    navigate(`/dashboard/fichas/${ficha.CodFicha}`)
+                  }
                 >
                   <Table.Cell>{ficha.CodFicha}</Table.Cell>
                   <Table.Cell>{ficha.CodVehiculo}</Table.Cell>

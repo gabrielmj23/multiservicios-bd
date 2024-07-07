@@ -2,6 +2,7 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { addCliente, editCliente, getClientes } from "~/utils/clientes.server";
 import { clienteSchema } from "~/utils/schemas";
@@ -22,7 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardClientes() {
   const clientes = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [nuevoClienteModalOpen, setNuevoClienteModalOpen] = useState(false);
   const [editClienteModalOpen, setEditClienteModalOpen] = useState(false);
   const [clienteEditando, setClienteEditando] = useState<z.infer<
@@ -36,6 +37,12 @@ export default function DashboardClientes() {
         <p>{clientes.message}</p>
       </div>
     );
+  }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (

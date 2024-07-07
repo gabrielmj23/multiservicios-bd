@@ -9,6 +9,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { addMarca, getMarcasConModelos } from "~/utils/marcas.server";
 import { addModelo } from "~/utils/modelos.server";
 import { getTipos } from "~/utils/tipos.server";
@@ -32,18 +33,27 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardMarcas() {
   const { marcas, tiposVehiculos } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingModelo, setIsCreatingModelo] = useState(false);
   const [codMarcaModelo, setCodMarcaModelo] = useState(0);
+
   if (marcas.type === "error" || tiposVehiculos.type === "error") {
     return (
       <div className="p-6">
         <h1>Marcas de vehículos</h1>
-        <p>{marcas.message ?? tiposVehiculos.message}</p>
+        <p>{marcas.type === "error" ? marcas.message : null}</p>
+        <p>{tiposVehiculos.type === "error" ? tiposVehiculos.message : null}</p>
       </div>
     );
   }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
+  }
+
   return (
     <div className="p-6 w-1/2">
       <h1>Marcas de vehículos</h1>

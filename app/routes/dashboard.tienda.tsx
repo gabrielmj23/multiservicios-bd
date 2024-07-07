@@ -12,6 +12,7 @@ import {
   addArticuloTienda,
   editarArticuloTienda,
 } from "~/utils/tienda.server";
+import toast from "react-hot-toast";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -45,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function DashboardArticulosTienda() {
   const articulos = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
   const [editingArticulo, setEditingArticulo] = useState<{
     RIFSuc: string;
@@ -62,6 +63,12 @@ export default function DashboardArticulosTienda() {
         <p>{articulos.message}</p>
       </div>
     );
+  }
+
+  if (fetcher.data?.type === "error") {
+    toast.error(fetcher.data.message, {
+      id: "error-toast",
+    });
   }
 
   return (
