@@ -40,3 +40,42 @@ export async function addSucursal(formData: FormData) {
     return handleError(error);
   }
 }
+
+export async function editarSucursal(formData: FormData) {
+  try {
+    const RIFSuc = String(formData.get("RIFSuc"));
+    const CIEncargado = String(formData.get("CIEncargado"));
+
+    await sql.connect(sqlConfig);
+    const result = await sql.query`
+      UPDATE Sucursales
+      SET CIEncargado = ${CIEncargado}, FechadeIngreso = GETDATE()
+      WHERE RIFSuc = ${RIFSuc}
+    `;
+
+    if (result.rowsAffected[0] > 0) {
+      return { type: "success", message: "Sucursal actualizada correctamente." };
+    } else {
+      return { type: "error", message: "No se encontró la sucursal para actualizar." };
+    }
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function getSucursal(RIFSuc: string) {
+  try {
+    await sql.connect(sqlConfig);
+    const result = await sql.query`
+      SELECT RIFSuc, NombreSuc, CiudadSuc, CIEncargado, FechadeIngreso
+      FROM Sucursales
+      WHERE RIFSuc = ${RIFSuc}
+    `;
+    if (result.recordset.length === 0) {
+      return { type: "error", message: "No se encontró la sucursal." };
+    }
+    return { type: "success", data: result.recordset[0] };
+  } catch (error) {
+    return handleError(error);
+  }
+}
