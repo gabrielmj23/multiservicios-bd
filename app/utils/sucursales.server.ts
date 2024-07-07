@@ -62,3 +62,20 @@ export async function editarSucursal(formData: FormData) {
     return handleError(error);
   }
 }
+
+export async function getSucursal(RIFSuc: string) {
+  try {
+    await sql.connect(sqlConfig);
+    const result = await sql.query`
+      SELECT RIFSuc, NombreSuc, CiudadSuc, CIEncargado, FechadeIngreso
+      FROM Sucursales
+      WHERE RIFSuc = ${RIFSuc}
+    `;
+    if (result.recordset.length === 0) {
+      return { type: "error", message: "No se encontró la sucursal." };
+    }
+    return { type: "success", data: result.recordset[0] };
+  } catch (error) {
+    return handleError(error);
+  }
+}
