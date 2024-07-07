@@ -86,4 +86,25 @@ export const empleadoSchema = z.object({
   TlfEmp: z.string().min(1).max(12),
   SalarioEmp: z.number().gt(0),
   RIFSuc: z.string().min(1).max(12),
-})
+});
+
+export const articulosTiendaSchema = z.object({
+  CodArticuloT: z.number().int().positive(),
+  NombreArticuloT: z.string().min(1).max(30),
+  Precio: z.number().positive(),
+  RIFSuc: z.string().min(1).max(12),
+});
+
+export const facturaTiendaSchema = z.object({
+  CodFTien: z.number().int().positive(),
+  FechaFTien: z.date(),
+  CICliente: z.string().min(1).max(10),
+  MontoFTien: z.number().positive(),
+});
+
+export const facturaTiendaIncluyenSchema = z.object({
+  CodFTien: z.number().int().positive(),
+  CodArticuloT: z.number().int().positive(),
+  Cantidad: z.number().int().positive(),
+  Precio: z.number().positive(),
+});
