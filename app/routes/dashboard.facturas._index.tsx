@@ -147,7 +147,11 @@ export default function DashboardFacturas() {
               </Table.Head>
               <Table.Body>
                 {facturasServicio.data.map((factura) => (
-                  <Table.Row key={factura.CodFServ}>
+                  <Table.Row
+                    key={factura.CodFServ}
+                    className="hover:cursor-pointer"
+                    onClick={() => navigate(`servicios/${factura.CodFServ}`)}
+                  >
                     <Table.Cell>{factura.CodFServ}</Table.Cell>
                     <Table.Cell>
                       {new Date(factura.FechaFServ).toLocaleDateString()}
@@ -155,7 +159,9 @@ export default function DashboardFacturas() {
                     <Table.Cell>
                       {new Date(factura.FechaFServ).toLocaleTimeString()}
                     </Table.Cell>
-                    <Table.Cell>${factura.MontoFServ.toLocaleString()}</Table.Cell>
+                    <Table.Cell>
+                      ${factura.MontoFServ.toLocaleString()}
+                    </Table.Cell>
                     <Table.Cell>{factura.PorcDcto || 0}%</Table.Cell>
                     <Table.Cell>{factura.CodFicha}</Table.Cell>
                   </Table.Row>

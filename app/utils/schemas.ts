@@ -214,3 +214,28 @@ export const facturaServicioSchema = z.object({
   PorcDcto: z.number().nullable(),
   CodFicha: z.number().int().positive(),
 });
+
+/*
+fac.CodFServ, fac.FechaFServ, fac.MontoFServ, fac.PorcDcto, c.CICliente, c.NombreCliente, v.CodVehiculo, v.PlacaVehic,
+ar.NumRealizada, a.DescActividad, ar.PrecioHora, ar.Tiempo, ar.PrecioHora * ar.Tiempo AS TotalActividad,
+i.NombreIns, arc.Cantidad, arc.Precio, arc.Cantidad * arc.Precio AS TotalInsumo
+*/
+export const detalleFacturaSchema = z.object({
+  CodFServ: z.number().int().positive(),
+  FechaFServ: z.date(),
+  MontoFServ: z.number(),
+  PorcDcto: z.number().nullable(),
+  CICliente: z.string().min(1).max(10),
+  NombreCliente: z.string().min(1).max(30),
+  CodVehiculo: z.number().int().positive(),
+  PlacaVehic: z.string(),
+  NumRealizada: z.number().int().positive(),
+  DescActividad: z.string(),
+  PrecioHora: z.number(),
+  Tiempo: z.number(),
+  TotalActividad: z.number(),
+  NombreIns: z.string(),
+  Cantidad: z.number().int().positive(),
+  Precio: z.number(),
+  TotalInsumo: z.number(),
+});
