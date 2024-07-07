@@ -106,15 +106,16 @@ export default function DashboardServicios() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-4/5">
       <h1>Servicios</h1>
       <Tabs>
         <Tabs.Item title="Ver servicios">
-          <div className="grid grid-cols-2 gap-6 pb-6">
-            <Button type="button" onClick={() => setIsCreating(true)}>
+          <div className="flex justify-start gap-4 mb-6">
+            <Button className="max-w-xs" type="button" onClick={() => setIsCreating(true)}>
               Nuevo servicio
             </Button>
             <Button
+            className="max-w-xs"
               type="button"
               color="success"
               onClick={() => setIsOffering(true)}

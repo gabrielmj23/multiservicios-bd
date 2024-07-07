@@ -153,3 +153,13 @@ export const personalMasAtiendeSchema = z.object({
   MesServ: z.number().int(),
   TotalServicios: z.number().int(),
 });
+
+export const proveedorSchema = z.object({
+  RIFProv: z.string().min(1).max(12),
+  RazonProv: z.string().min(1).max(30),
+  DireccionProv: z.string().min(1).max(30),
+  TlfLocal: z.string().min(1).max(12),
+  TlfCelular: z.string().min(1).max(12),
+  PersonaCont: z.string(),
+  CodLinea: z.number().int(),
+});
