@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export type DBResponseType =
@@ -11,6 +12,33 @@ export type DBResponseType =
       code: string | null;
       message: string;
     };
+
+export const insumoSchema = z.object({
+  CodIns: z.number().int().min(1).optional(),
+  NombreIns: z.string().min(1).max(15),
+  DescripcionIns: z.string().min(1).max(30),
+  FabricanteIns: z.string().min(1).max(30),
+  EsEco: z.union([z.boolean(), z.number().transform((num) => num !== 0)]), // Transforma números a booleanos, donde 0 es false y cualquier otro número es true
+  PrecioIns: z.number().gt(0),
+  ExistIns: z.number().int().min(0),
+  MinIns: z.number().int().min(0),
+  MaxIns: z.number().int().min(0),
+  UMedida: z.string().min(1).max(10),
+  CodLinea: z.number().int().min(1),
+
+});
+
+export const lineaSchema = z.object({
+  CodLinea: z.number().int().min(1).optional(),
+  NombreLinea: z.string().min(1).max(30),
+});
+
+export const articuloSchema = z.object({
+  CodArticuloT: z.number().int().min(1),
+  NombreArticuloT: z.string().min(1).max(30),
+  Precio: z.number().gt(0),
+  RIFSuc: z.string().min(1).max(12),
+});
 
 export const clienteSchema = z.object({
   CICliente: z.string().min(1).max(10),
