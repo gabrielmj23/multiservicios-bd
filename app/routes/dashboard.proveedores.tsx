@@ -120,7 +120,7 @@ export default function DashboardProveedores() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Nuevo proveedor</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
             <fieldset className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="RIFProv">RIF</Label>
@@ -179,7 +179,7 @@ export default function DashboardProveedores() {
       <Modal show={isEditing} onClose={() => setIsEditing(false)}>
         <Modal.Header>Editar proveedor</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsEditing(false)}>
             <fieldset className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="RIFProv">RIF</Label>
@@ -268,7 +268,7 @@ export default function DashboardProveedores() {
         <Modal.Header>Eliminar proveedor</Modal.Header>
         <Modal.Body>
           <p className="mb-4">¿Está seguro que desea eliminar el proveedor?</p>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setRifElim("")}>
             <input type="hidden" name="RIFProv" value={rifElim} />
             <Button
               type="submit"

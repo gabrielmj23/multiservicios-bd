@@ -120,7 +120,7 @@ export default function DashboardMarcas() {
       <Modal show={isCreating} onClose={() => setIsCreating(false)}>
         <Modal.Header>Nueva marca</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
             <fieldset>
               <Label htmlFor="NombreMarca">Nombre de la marca</Label>
               <TextInput
@@ -138,7 +138,7 @@ export default function DashboardMarcas() {
       <Modal show={isCreatingModelo} onClose={() => setIsCreatingModelo(false)}>
         <Modal.Header>Nuevo modelo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setIsCreatingModelo(false)}>
             <fieldset>
               <Label htmlFor="DescModelo">Descripción</Label>
               <TextInput

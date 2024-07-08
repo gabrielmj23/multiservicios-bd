@@ -74,6 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
         CICliente,
         Articulos,
       } satisfies FacturaDetalles;
+      console.log(facturaDetalles);
       return await crearFacturaYArticulos(facturaDetalles, RIFSuc);
     }
   }
@@ -85,12 +86,7 @@ export default function DashboardFacturas() {
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
   const [isCreatingFTienda, setIsCreatingFTienda] = useState(false);
-  const [cantidades, setCantidades] = useState<
-    Array<{
-      CodArticuloT: number;
-      value: number;
-    }>
-  >([]);
+  const [cantidades, setCantidades] = useState({});
 
   if (
     articulos.type === "error" ||
@@ -117,26 +113,25 @@ export default function DashboardFacturas() {
     });
   }
 
-  const handleCantidadChange = (CodArticuloT: number, value: number) => {
-    setCantidades((prev) => [...prev, { CodArticuloT, value }]);
-  };
-
-  const generateHiddenInputsForCantidades = () => {
-    return cantidades.map(({ CodArticuloT, value }) => {
-      if (value !== 0) {
-        return (
-          <input
-            type="hidden"
-            name={`CodArticuloT-${CodArticuloT}`}
-            value={value}
-            key={CodArticuloT}
-          />
-        );
-      }
-      return null;
-    });
-  };
-
+ const handleCantidadChange = (CodArticuloT, value) => {
+  setCantidades(prev => ({ ...prev, [CodArticuloT]: Number(value) }));
+  console.log(cantidades);
+};
+const generateHiddenInputsForCantidades = () => {
+  return Object.entries(cantidades).map(([key, value]) => {
+    if (value !== 0) {
+      return (
+        <input
+          type="hidden"
+          name={`CodArticuloT-${key}`}
+          value={value}
+          key={key}
+        />
+      );
+    }
+    return null;
+  });
+};
   return (
     <div className="p-6">
       <h1>Facturas</h1>
@@ -229,7 +224,7 @@ export default function DashboardFacturas() {
           >
             <Modal.Header>Crear Nueva Factura</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setIsCreatingFTienda(false)}>
                 <Button
                   type="submit"
                   name="_action"

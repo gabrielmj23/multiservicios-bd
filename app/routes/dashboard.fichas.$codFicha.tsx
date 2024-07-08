@@ -162,7 +162,7 @@ export default function DashboardFicha() {
           <Modal show={realizarAct} onClose={() => setRealizarAct(false)}>
             <Modal.Header>Realizar actividad</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setRealizarAct(false)}>
                 <fieldset className="grid grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="CodServicio">Servicio</Label>
@@ -237,7 +237,7 @@ export default function DashboardFicha() {
           <Modal show={consumir} onClose={() => setConsumir(false)}>
             <Modal.Header>Consumir insumo</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setConsumir(false)}>
                 <fieldset className="grid grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="CodInsumo">Insumo</Label>
@@ -321,7 +321,7 @@ export default function DashboardFicha() {
           >
             <Modal.Header>Atender cliente</Modal.Header>
             <Modal.Body>
-              <fetcher.Form method="post">
+              <fetcher.Form method="post" onSubmit={() => setEmpezarModal(false)}>
                 <fieldset>
                   <Label htmlFor="TiempoSalReal">Fecha de salida real</Label>
                   <TextInput

@@ -197,7 +197,7 @@ export const facturaTiendaSchema = z.object({
   CodFTien: z.number().int().positive(),
   FechaFTien: z.date(),
   CICliente: z.string().min(1).max(10),
-  MontoFTien: z.number().positive(),
+  MontoFTien: z.number(),
 });
 
 export const facturaTiendaIncluyenSchema = z.object({

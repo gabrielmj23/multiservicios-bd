@@ -113,7 +113,7 @@ export default function DashboardClientes() {
       >
         <Modal.Header>Nuevo cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setNuevoClienteModalOpen(false)}>
             <fieldset>
               <Label htmlFor="CICliente">Cédula</Label>
               <TextInput
@@ -176,7 +176,7 @@ export default function DashboardClientes() {
       >
         <Modal.Header>Editar cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post">
+          <fetcher.Form method="post" onSubmit={() => setEditClienteModalOpen(false)}>
             <fieldset>
               <Label htmlFor="CICliente">Cédula</Label>
               <TextInput

@@ -399,8 +399,6 @@ ALTER TABLE Servicios
 ADD FOREIGN KEY (CICoordinador) REFERENCES Empleados(CIEmpleado)
 ON UPDATE NO ACTION
 
-ALTER TABLE FacturasTienda
-ADD CONSTRAINT DF_MontoFTien DEFAULT 0 FOR MontoFTien;
 
 -- Actualizaci�n autom�tica del monto del servicio
 CREATE TRIGGER SumarMontoServicio
