@@ -7,15 +7,27 @@ body {
 }
 
 h1 {
-  @apply text-3xl font-bold;
+  @apply text-3xl font-bold mb-2;
 }
 
 h2 {
   @apply text-2xl font-bold;
 }
 
+nav {
+  box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+tr {
+  @apply bg-white;
+}
+
 nav > a {
-  @apply font-semibold hover:drop-shadow-xl;
+  @apply font-semibold hover:drop-shadow-xl text-lg;
+}
+
+a > span {
+  @apply flex items-center gap-2;
 }
 
 .custom-field {
@@ -25,4 +37,8 @@ nav > a {
 #login-container {
   background-image: url("../bgphoto2.jpg");
   background-size: cover;
+}
+
+div[role="dialog"] form > fieldset {
+  @apply mb-2;
 }
