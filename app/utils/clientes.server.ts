@@ -86,3 +86,17 @@ export async function editCliente(formData: FormData) {
     return json(handleError(error));
   }
 }
+
+export async function eliminarCliente(formData: FormData) {
+  try {
+    const CICliente = String(formData.get("CICliente"));
+    await sql.connect(sqlConfig);
+    await sql.query`DELETE FROM Clientes WHERE CICliente = ${CICliente}`;
+    return {
+      type: "success" as const,
+      message: "Cliente eliminado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}

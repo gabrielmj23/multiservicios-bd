@@ -11,6 +11,7 @@ import {
   getArticulosTienda,
   addArticuloTienda,
   editarArticuloTienda,
+  eliminarArticuloTienda,
 } from "~/utils/tienda.server";
 import toast from "react-hot-toast";
 
@@ -41,6 +42,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return await addArticuloTienda(formData, RIFSuc);
     case "editarArticulo":
       return await editarArticuloTienda(formData);
+    case "eliminar":
+      return await eliminarArticuloTienda(formData);
   }
 }
 
@@ -55,6 +58,8 @@ export default function DashboardArticulosTienda() {
     Precio: number;
   } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [codArtElim, setCodArtElim] = useState(0);
+  const [isElim, setIsElim] = useState(false);
 
   if (articulos.type === "error") {
     return (
@@ -112,7 +117,14 @@ export default function DashboardArticulosTienda() {
                       >
                         Editar
                       </option>
-                      <option>Eliminar</option>
+                      <option
+                        onClick={() => {
+                          setCodArtElim(articulo.CodArticuloT);
+                          setIsElim(true);
+                        }}
+                      >
+                        Eliminar
+                      </option>
                     </Select>
                   </Table.Cell>
                 </Table.Row>
@@ -187,6 +199,32 @@ export default function DashboardArticulosTienda() {
             >
               Guardar cambios
             </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal show={isElim} onClose={() => setIsElim(false)} size="md">
+        <Modal.Header>Eliminar artículo</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post" onSubmit={() => setIsElim(false)}>
+            <input type="hidden" name="CodArticuloT" value={codArtElim} />
+            <p>¿Está seguro que desea eliminar este artículo?</p>
+            <div className="grid grid-cols-2 mt-2 gap-6">
+              <Button
+                type="submit"
+                color="failure"
+                name="_action"
+                value="eliminar"
+              >
+                Si
+              </Button>
+              <Button
+                type="button"
+                color="gray"
+                onClick={() => setIsElim(false)}
+              >
+                No
+              </Button>
+            </div>
           </fetcher.Form>
         </Modal.Body>
       </Modal>

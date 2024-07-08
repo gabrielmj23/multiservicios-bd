@@ -264,7 +264,10 @@ export default function DashboardInventario() {
       >
         <Modal.Header>Nuevo insumo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setNuevoInsumoModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setNuevoInsumoModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="NombreIns">Nombre</Label>
               <TextInput type="text" id="NombreIns" name="NombreIns" required />
@@ -355,7 +358,10 @@ export default function DashboardInventario() {
       >
         <Modal.Header>Editar insumo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post"onSubmit={() => setEditInsumoModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEditInsumoModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CodIns">Código de insumo</Label>
               <TextInput
@@ -470,11 +476,15 @@ export default function DashboardInventario() {
       <Modal
         show={eliminarInsumoModalOpen}
         onClose={() => setEliminarInsumoModalOpen(false)}
+        size="md"
       >
         <Modal.Header>Confirmar Eliminación</Modal.Header>
         <Modal.Body>
           <p>¿Estás seguro de que quieres eliminar este insumo?</p>
-          <fetcher.Form method="post" onSubmit={() => setEliminarInsumoModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEliminarInsumoModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CodIns">Código de insumo</Label>
               <TextInput
@@ -490,12 +500,14 @@ export default function DashboardInventario() {
                 type="submit"
                 name="_action"
                 value="eliminarInsumo"
+                color="failure"
                 disabled={fetcher.state !== "idle"}
               >
                 Eliminar
               </Button>
               <Button
                 type="button"
+                color="gray"
                 onClick={() => setEliminarInsumoModalOpen(false)}
               >
                 Cancelar
@@ -510,7 +522,10 @@ export default function DashboardInventario() {
       >
         <Modal.Header>Nueva línea</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setNuevoLineaModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setNuevoLineaModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="NombreLinea">Nombre de línea</Label>
               <TextInput
@@ -537,7 +552,10 @@ export default function DashboardInventario() {
       >
         <Modal.Header>Editar línea</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setEditLineaModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEditLineaModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CodLinea">Código de línea</Label>
               <TextInput
@@ -575,7 +593,10 @@ export default function DashboardInventario() {
         <Modal.Header>Confirmar Eliminación</Modal.Header>
         <Modal.Body>
           <p>¿Estás seguro de que quieres eliminar esta línea?</p>
-          <fetcher.Form method="post" onSubmit={() => setEliminarLineaModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEliminarLineaModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CodLinea">Código de línea</Label>
               <TextInput

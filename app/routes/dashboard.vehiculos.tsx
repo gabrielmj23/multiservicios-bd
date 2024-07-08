@@ -10,6 +10,7 @@ import { vehiculoConForaneosSchema } from "~/utils/schemas";
 import {
   addVehiculo,
   editVehiculo,
+  eliminarVehiculo,
   getVehiculosConModelo,
 } from "~/utils/vehiculos.server";
 
@@ -28,6 +29,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return await addVehiculo(formData);
     case "editar":
       return await editVehiculo(formData);
+    case "eliminar":
+      return await eliminarVehiculo(formData);
   }
 }
 
@@ -40,6 +43,8 @@ export default function DashboardVehiculos() {
   const [vehiculoEditando, setVehiculoEditando] = useState<z.infer<
     typeof vehiculoConForaneosSchema
   > | null>(null);
+  const [elimModalOpen, setElimModalOpen] = useState(false);
+  const [codVehicElim, setCodVehicElim] = useState(0);
 
   if (
     vehiculos.type === "error" ||
@@ -122,7 +127,14 @@ export default function DashboardVehiculos() {
                       >
                         Editar
                       </option>
-                      <option>Eliminar</option>
+                      <option
+                        onClick={() => {
+                          setCodVehicElim(vehiculo.CodVehiculo);
+                          setElimModalOpen(true);
+                        }}
+                      >
+                        Eliminar
+                      </option>
                     </Select>
                   </Table.Cell>
                 </Table.Row>
@@ -137,7 +149,10 @@ export default function DashboardVehiculos() {
       >
         <Modal.Header>Nuevo vehículo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setNuevoVehiculoModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setNuevoVehiculoModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="PlacaVehic">Número de placa</Label>
               <TextInput type="text" id="PlacaVehic" name="PlacaVehic" />
@@ -215,7 +230,10 @@ export default function DashboardVehiculos() {
       >
         <Modal.Header>Editar cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setEditVehiculoModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEditVehiculoModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="PlacaVehic">Número de placa</Label>
               <TextInput
@@ -300,6 +318,36 @@ export default function DashboardVehiculos() {
             >
               Actualizar
             </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal show={elimModalOpen} onClose={() => setElimModalOpen(false)} size="md">
+        <Modal.Header>Eliminar vehículo</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post" onSubmit={() => setElimModalOpen(false)}>
+            <input type="hidden" name="CodVehiculo" value={codVehicElim} />
+            <p>
+              ¿Seguro que desea eliminar el vehículo de código {codVehicElim}?
+            </p>
+            <div className="grid grid-cols-2 gap-6 mt-2">
+              <Button
+                type="submit"
+                color="failure"
+                name="_action"
+                value="eliminar"
+                disabled={fetcher.state !== "idle"}
+              >
+                Sí
+              </Button>
+              <Button
+                type="button"
+                color="gray"
+                onClick={() => setElimModalOpen(false)}
+                disabled={fetcher.state !== "idle"}
+              >
+                No
+              </Button>
+            </div>
           </fetcher.Form>
         </Modal.Body>
       </Modal>

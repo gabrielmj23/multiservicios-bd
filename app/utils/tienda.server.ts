@@ -74,6 +74,23 @@ export async function editarArticuloTienda(formData: FormData) {
   }
 }
 
+export async function eliminarArticuloTienda(formData: FormData) {
+  try {
+    const CodArticuloT = Number(formData.get("CodArticuloT"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+      DELETE FROM ArticulosTienda
+      WHERE CodArticuloT = ${CodArticuloT}
+    `;
+    return {
+      type: "success" as const,
+      message: "Artículo eliminado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
 export async function crearFacturaYArticulos(
   facturaDetalles: FacturaDetalles,
   RIFSuc: string

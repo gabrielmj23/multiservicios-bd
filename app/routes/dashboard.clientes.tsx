@@ -4,7 +4,12 @@ import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { addCliente, editCliente, getClientes } from "~/utils/clientes.server";
+import {
+  addCliente,
+  editCliente,
+  eliminarCliente,
+  getClientes,
+} from "~/utils/clientes.server";
 import { clienteSchema } from "~/utils/schemas";
 
 export async function loader() {
@@ -18,6 +23,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return await addCliente(formData);
     case "editar":
       return await editCliente(formData);
+    case "eliminar":
+      return await eliminarCliente(formData);
   }
 }
 
@@ -29,6 +36,8 @@ export default function DashboardClientes() {
   const [clienteEditando, setClienteEditando] = useState<z.infer<
     typeof clienteSchema
   > | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [ciElim, setCiElim] = useState("");
 
   if (clientes.type === "error") {
     return (
@@ -98,7 +107,14 @@ export default function DashboardClientes() {
                       >
                         Editar
                       </option>
-                      <option>Eliminar</option>
+                      <option
+                        onClick={() => {
+                          setCiElim(cliente.CICliente);
+                          setDeleteModalOpen(true);
+                        }}
+                      >
+                        Eliminar
+                      </option>
                     </Select>
                   </Table.Cell>
                 </Table.Row>
@@ -113,7 +129,10 @@ export default function DashboardClientes() {
       >
         <Modal.Header>Nuevo cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setNuevoClienteModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setNuevoClienteModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CICliente">Cédula</Label>
               <TextInput
@@ -176,7 +195,10 @@ export default function DashboardClientes() {
       >
         <Modal.Header>Editar cliente</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setEditClienteModalOpen(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setEditClienteModalOpen(false)}
+          >
             <fieldset>
               <Label htmlFor="CICliente">Cédula</Label>
               <TextInput
@@ -231,6 +253,41 @@ export default function DashboardClientes() {
             >
               Actualizar
             </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        size="md"
+      >
+        <Modal.Header>Eliminar cliente</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setDeleteModalOpen(false)}
+          >
+            <input type="hidden" name="CICliente" value={ciElim} />
+            <p>¿Seguro que desea eliminar al cliente de cédula: {ciElim}?</p>
+            <div className="grid grid-cols-2 gap-6">
+              <Button
+                type="submit"
+                name="_action"
+                value="eliminar"
+                color="failure"
+                disabled={fetcher.state !== "idle"}
+              >
+                Sí
+              </Button>
+              <Button
+                type="button"
+                color="gray"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={fetcher.state !== "idle"}
+              >
+                No
+              </Button>
+            </div>
           </fetcher.Form>
         </Modal.Body>
       </Modal>

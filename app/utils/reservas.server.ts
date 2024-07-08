@@ -24,7 +24,7 @@ export async function getReservas(RIFSuc: string) {
 export async function addReserva(formData: FormData, RIFSuc: string) {
   try {
     const reserva = {
-      FechaServicio: String(formData.get("FechaServicio")),
+      FechaServicio: String(formData.get("FechaServicio")).split("T").join(" "),
       Abono: Number(formData.get("Abono")),
       CodVehiculo: Number(formData.get("CodVehiculo")),
       CodServicio: Number(formData.get("CodServicio")),

@@ -104,3 +104,20 @@ export async function editVehiculo(formData: FormData) {
     return handleError(error);
   }
 }
+
+export async function eliminarVehiculo(formData: FormData) {
+  try {
+    const CodVehiculo = Number(formData.get("CodVehiculo"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+      DELETE FROM Vehiculos
+      WHERE CodVehiculo = ${CodVehiculo}
+    `;
+    return {
+      type: "success" as const,
+      message: "Vehículo eliminado correctamente",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
