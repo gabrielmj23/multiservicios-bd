@@ -149,8 +149,7 @@ CREATE TABLE FacturasTienda (
 	FechaFTien DATETIME NOT NULL,
 	CICliente VARCHAR(10) NOT NULL,
 	MontoFTien DECIMAL(6,2) DEFAULT 0,
-	FOREIGN KEY (CICliente) REFERENCES Clientes(CICliente) ON UPDATE CASCADE
-	
+	FOREIGN KEY (CICliente) REFERENCES Clientes(CICliente) ON UPDATE CASCADE	
 )
 
 CREATE TABLE FacturasServicio (
@@ -217,7 +216,8 @@ CREATE TABLE Modelos (
 	CHECK (Peso > 0),
 	CHECK (Octan = 87 OR Octan = 89 OR Octan = 91),
 	PRIMARY KEY (CodMarca, CodModelo),
-	FOREIGN KEY (CodTipo) REFERENCES TiposVehiculos(CodTipo) ON UPDATE CASCADE
+	FOREIGN KEY (CodTipo) REFERENCES TiposVehiculos(CodTipo) ON UPDATE CASCADE,
+	FOREIGN KEY (CodMarca) REFERENCES Marcas(CodMarca) ON UPDATE CASCADE
 )
 
 CREATE TABLE Actividades (

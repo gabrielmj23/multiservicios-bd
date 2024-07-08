@@ -77,11 +77,11 @@ export default function DetalleFactura() {
       <hr className="my-4 border-slate-500"></hr>
       <div className="text-end">
         <p className="text-lg">
-          Subtotal:{" "}
+          Subtotal: ${" "}
           {detalles.data.datosBasicos.PorcDcto
-            ? detalles.data.datosBasicos.MontoFServ /
-              (1 + detalles.data.datosBasicos.PorcDcto)
-            : detalles.data.datosBasicos.MontoFServ}
+            ? (detalles.data.datosBasicos.MontoFServ /
+              (1 + detalles.data.datosBasicos.PorcDcto)).toFixed(2)
+            : detalles.data.datosBasicos.MontoFServ.toFixed(2)}
         </p>
         <p className="text-lg">
           Descuento por cliente frecuente:{" "}
