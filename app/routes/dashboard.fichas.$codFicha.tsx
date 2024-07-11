@@ -210,6 +210,7 @@ export default function DashboardFicha() {
                       id="PrecioHora"
                       name="PrecioHora"
                       type="number"
+                      step={0.01}
                       required
                     />
                   </div>

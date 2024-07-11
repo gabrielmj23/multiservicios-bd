@@ -149,7 +149,7 @@ export const personalMasAtiendeSchema = z.object({
   RIFSuc: z.string(),
   CIEmpleado: z.string(),
   NombreEmp: z.string(),
-  AñoServ: z.number().int(),
+  AnioServ: z.number().int(),
   MesServ: z.number().int(),
   TotalServicios: z.number().int(),
 });

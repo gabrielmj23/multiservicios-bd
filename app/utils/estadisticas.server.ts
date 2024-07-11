@@ -150,7 +150,7 @@ export async function comparacionSuc(tipoFact: string | null) {
               RIFSuc: z.string(),
               NombreSuc: z.string(),
               TotalFacturas: z.number().int(),
-              TotalFacturado: z.number().int(),
+              TotalFacturado: z.number(),
             })
             .parseAsync(servicio)
         )
