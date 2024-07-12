@@ -206,6 +206,48 @@ export default function DashboardInventario() {
               </div>
             </>
           )}
+          {inventariosFisicos.data.length === 0 ? (
+            <>
+              <p>No hay inventarios fisicos todavía</p>
+              <Button
+                type="button"
+                className="mt-2"
+                onClick={() => setNuevoInventarioModalOpen(true)}
+              >
+                Registra el primer inventario fisico
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                type="button"
+                className="my-2"
+                onClick={() => setNuevoInventarioModalOpen(true)}
+              >
+                Nuevo inventario fisico
+              </Button>
+              <Table hoverable className="min-w-fit">
+                <Table.Head>
+                  <Table.HeadCell>Id</Table.HeadCell>
+                  <Table.HeadCell>Fecha</Table.HeadCell>
+                  <Table.HeadCell>Código de insumo</Table.HeadCell>
+                  <Table.HeadCell>Cantidad</Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="bg-white">
+                  {inventariosFisicos.data.map((inventario) => (
+                    <Table.Row key={inventario.IdInv}>
+                      <Table.Cell>{inventario.IdInv}</Table.Cell>
+                      <Table.Cell>
+                        {new Date(inventario.FechaInv).toLocaleDateString()}
+                      </Table.Cell>
+                      <Table.Cell>{inventario.CodIns}</Table.Cell>
+                      <Table.Cell>{inventario.Cantidad}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+            </>
+          )}
         </Tabs.Item>
         <Tabs.Item title="Líneas de suministro">
           {lineas.data.length === 0 ? (
@@ -612,6 +654,53 @@ export default function DashboardInventario() {
                 Cancelar
               </Button>
             </div>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={nuevoInventarioModalOpen}
+        onClose={() => setNuevoInventarioModalOpen(false)}
+      >
+        <Modal.Header>Nuevo inventario fisico</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post">
+            <fieldset>
+              <label htmlFor="Fecha">Fecha</label>
+              <TextInput
+                type="date"
+                id="Fecha"
+                name="Fecha"
+                placeholder="fecha"
+              />
+            </fieldset>
+            <fieldset>
+              <label htmlFor="CodIns">Insumo</label>
+              <Select name="CodIns" id="CodIns" required>
+                {insumos.data.map((insumo) => (
+                  <option key={insumo.CodIns} value={insumo.CodIns}>
+                    {insumo.NombreIns}
+                  </option>
+                ))}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <label htmlFor="Cantidad">Cantidad</label>
+              <TextInput
+                type="number"
+                id="Cantidad"
+                name="Cantidad"
+                placeholder="1"
+              />
+            </fieldset>
+            <Button
+              type="submit"
+              name="_action"
+              value="nuevoInventario"
+              disabled={fetcher.state !== "idle"}
+            >
+              Crear
+            </Button>
           </fetcher.Form>
         </Modal.Body>
       </Modal>
