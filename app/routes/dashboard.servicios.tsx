@@ -16,6 +16,7 @@ import {
 } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { getSession } from "~/session";
 import { getEmpleados } from "~/utils/empleados.server";
 import { addFicha, getFichas } from "~/utils/fichas.server";
@@ -23,6 +24,10 @@ import { addReserva, getReservas } from "~/utils/reservas.server";
 import {
   addActividad,
   addServicio,
+  editActividad,
+  editServicio,
+  eliminarActividad,
+  eliminarServicio,
   getServicios,
   getServiciosDeSucursal,
   ofrecerServicio,
@@ -62,8 +67,16 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (action) {
     case "nuevoServ":
       return await addServicio(formData, RIFSuc);
+    case "editServ":
+      return await editServicio(formData);
+    case "deleteServ":
+      return await eliminarServicio(formData);
     case "nuevaAct":
       return await addActividad(formData);
+    case "editAct":
+      return await editActividad(formData);
+    case "deleteAct":
+      return await eliminarActividad(formData);
     case "ofrecerServ":
       return await ofrecerServicio(formData, RIFSuc);
     case "crearFicha":
@@ -78,11 +91,36 @@ export default function DashboardServicios() {
     useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
+  // Servicios
   const [codServicioAgg, setCodServicioAgg] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
-  const [isCreatingAct, setIsCreatingAct] = useState(false);
+  const [isEditServ, setIsEditServ] = useState(false);
+  const [servicioEdit, setServicioEdit] = useState<{
+    CodServicio: number;
+    NombreServ: string;
+    MontoServ: number;
+    CIEncargado: string;
+    CICoordinador: string;
+    Actividades: Array<{
+      CodActividad: number | null;
+      DescActividad: string | null;
+      CostoHora: number | null;
+    }>;
+  } | null>(null);
+  const [isEliminar, setIsEliminar] = useState(false);
   const [isOffering, setIsOffering] = useState(false);
+  // Actividades
+  const [isCreatingAct, setIsCreatingAct] = useState(false);
+  const [isEditAct, setIsEditAct] = useState(false);
+  const [activEdit, setActivEdit] = useState<{
+    CodActividad: number | null;
+    DescActividad: string | null;
+    CostoHora: number | null;
+  } | null>(null);
+  const [isEliminarAct, setIsEliminarAct] = useState(false);
+  // Fichas
   const [isCreatingFicha, setIsCreatingFicha] = useState(false);
+  // Reservas
   const [isCreatingReserva, setIsCreatingReserva] = useState(false);
   const [montoServicioAct, setMontoServicioAct] = useState(0);
 
@@ -152,39 +190,445 @@ export default function DashboardServicios() {
                   </p>
                   <br></br>
                   <h3 className="text-lg font-semibold mb-2">Actividades</h3>
-                  <ul className="ps-6">
-                    {servicio.Actividades.map((actividad) =>
-                      actividad.CodActividad === null ? (
-                        <li key={servicio.CodServicio + "-1"}>
-                          No hay actividades por ahora
-                        </li>
-                      ) : (
-                        <li
-                          key={
-                            servicio.CodServicio + "-" + actividad.CodActividad
-                          }
-                          className="list-decimal"
-                        >
-                          {actividad.DescActividad} - $
-                          {actividad.CostoHora?.toLocaleString()} por hora
-                        </li>
-                      )
-                    )}
-                  </ul>
-                  <Button
-                    type="button"
-                    className="mt-3"
-                    onClick={() => {
-                      setCodServicioAgg(servicio.CodServicio);
-                      setIsCreatingAct(true);
-                    }}
-                  >
-                    Nueva actividad
-                  </Button>
+                  <Table className="max-w-xl" hoverable>
+                    <Table.Head>
+                      <Table.HeadCell>Nombre</Table.HeadCell>
+                      <Table.HeadCell>Costo por hora</Table.HeadCell>
+                      <Table.HeadCell>Acciones</Table.HeadCell>
+                    </Table.Head>
+                    <Table.Body>
+                      {servicio.Actividades.map((actividad) =>
+                        actividad.CodActividad === null ? null : (
+                          <Table.Row key={actividad.CodActividad}>
+                            <Table.Cell>{actividad.DescActividad}</Table.Cell>
+                            <Table.Cell>
+                              ${actividad.CostoHora?.toLocaleString()}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Select>
+                                <option disabled selected>
+                                  Seleccionar...
+                                </option>
+                                <option
+                                  onClick={() => {
+                                    setActivEdit(actividad);
+                                    setCodServicioAgg(servicio.CodServicio);
+                                    setIsEditAct(true);
+                                  }}
+                                >
+                                  Editar
+                                </option>
+                                <option
+                                  onClick={() => {
+                                    setActivEdit(actividad);
+                                    setCodServicioAgg(servicio.CodServicio);
+                                    setIsEliminarAct(true);
+                                  }}
+                                >
+                                  Eliminar
+                                </option>
+                              </Select>
+                            </Table.Cell>
+                          </Table.Row>
+                        )
+                      )}
+                    </Table.Body>
+                  </Table>
+                  <div className="grid grid-cols-3 gap-4 mt-3 max-w-xl">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setCodServicioAgg(servicio.CodServicio);
+                        setIsCreatingAct(true);
+                      }}
+                    >
+                      Nueva actividad
+                    </Button>
+                    <Button
+                      type="button"
+                      color="warning"
+                      onClick={() => {
+                        setServicioEdit(servicio);
+                        setIsEditServ(true);
+                      }}
+                    >
+                      Editar servicio
+                    </Button>
+                    <Button
+                      type="button"
+                      color="failure"
+                      onClick={() => {
+                        setServicioEdit(servicio);
+                        setIsEliminar(true);
+                      }}
+                    >
+                      Eliminar servicio
+                    </Button>
+                  </div>
                 </Accordion.Content>
               </Accordion.Panel>
             ))}
           </Accordion>
+          <Modal show={isCreating} onClose={() => setIsCreating(false)}>
+            <Modal.Header>Nuevo servicio</Modal.Header>
+            <Modal.Body>
+              <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
+                <fieldset>
+                  <Label htmlFor="NombreServ">Nombre del servicio</Label>
+                  <TextInput
+                    id="NombreServ"
+                    name="NombreServ"
+                    type="text"
+                    required
+                  />
+                </fieldset>
+                <fieldset className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="CICoordinador">Coordinador</Label>
+                    <Select id="CICoordinador" name="CICoordinador" required>
+                      {empleados.data.empleados.map((emp) => (
+                        <option key={emp.CIEmpleado} value={emp.CIEmpleado}>
+                          {emp.CIEmpleado} - {emp.NombreEmp}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="CIEncargado">Encargado</Label>
+                    <Select id="CIEncargado" name="CIEncargado" required>
+                      {empleados.data.empleados.map((emp) => (
+                        <option key={emp.CIEmpleado} value={emp.CIEmpleado}>
+                          {emp.CIEmpleado} - {emp.NombreEmp}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </fieldset>
+                <fieldset className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="Capacidad">Capacidad</Label>
+                    <TextInput
+                      id="Capacidad"
+                      name="Capacidad"
+                      type="number"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="TiempoReserva">
+                      Tiempo mínimo de reserva (días)
+                    </Label>
+                    <TextInput
+                      id="TiempoReserva"
+                      name="TiempoReserva"
+                      type="number"
+                      required
+                    />
+                  </div>
+                </fieldset>
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="nuevoServ"
+                  disabled={fetcher.state !== "idle"}
+                >
+                  Agregar
+                </Button>
+              </fetcher.Form>
+            </Modal.Body>
+          </Modal>
+          <Modal show={isEditServ} onClose={() => setIsEditServ(false)}>
+            <Modal.Header>Editar servicio</Modal.Header>
+            <Modal.Body>
+              <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
+                <input
+                  type="hidden"
+                  name="CodServicio"
+                  value={servicioEdit?.CodServicio}
+                />
+                <fieldset>
+                  <Label htmlFor="NombreServ">Nombre del servicio</Label>
+                  <TextInput
+                    id="NombreServ"
+                    name="NombreServ"
+                    type="text"
+                    defaultValue={servicioEdit?.NombreServ}
+                    required
+                  />
+                </fieldset>
+                <fieldset className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="CICoordinador">Coordinador</Label>
+                    <Select id="CICoordinador" name="CICoordinador" required>
+                      {empleados.data.empleados.map((emp) => (
+                        <option
+                          key={emp.CIEmpleado}
+                          value={emp.CIEmpleado}
+                          selected={
+                            emp.CIEmpleado === servicioEdit?.CICoordinador
+                          }
+                        >
+                          {emp.CIEmpleado} - {emp.NombreEmp}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="CIEncargado">Encargado</Label>
+                    <Select id="CIEncargado" name="CIEncargado" required>
+                      {empleados.data.empleados.map((emp) => (
+                        <option
+                          key={emp.CIEmpleado}
+                          value={emp.CIEmpleado}
+                          selected={
+                            emp.CIEmpleado === servicioEdit?.CIEncargado
+                          }
+                        >
+                          {emp.CIEmpleado} - {emp.NombreEmp}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </fieldset>
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="editServ"
+                  disabled={fetcher.state !== "idle"}
+                >
+                  Editar
+                </Button>
+              </fetcher.Form>
+            </Modal.Body>
+          </Modal>
+          <Modal
+            show={isEliminar}
+            size="md"
+            onClose={() => setIsEliminar(false)}
+            popup
+          >
+            <Modal.Header />
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+                <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                  ¿Desea eliminar al servicio {servicioEdit?.NombreServ}?
+                </h3>
+                <div className="flex justify-center gap-4">
+                  <fetcher.Form
+                    method="post"
+                    onSubmit={() => setIsEliminar(false)}
+                  >
+                    <input
+                      type="hidden"
+                      name="CodServicio"
+                      value={servicioEdit?.CodServicio}
+                    />
+                    <Button
+                      color="success"
+                      type="submit"
+                      name="_action"
+                      value="deleteServ"
+                    >
+                      Si, Confirmar
+                    </Button>
+                  </fetcher.Form>
+
+                  <Button color="gray" onClick={() => setIsEliminar(false)}>
+                    No, Cancelar
+                  </Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
+          <Modal show={isOffering} onClose={() => setIsOffering(false)}>
+            <Modal.Header>Ofrecer servicios</Modal.Header>
+            <Modal.Body>
+              <fetcher.Form method="post" onSubmit={() => setIsOffering(false)}>
+                <fieldset>
+                  <Label htmlFor="CodServicio">Servicio</Label>
+                  <Select id="CodServicio" name="CodServicio" required>
+                    {servicios.data
+                      .filter(
+                        (servicio) =>
+                          !serviciosSuc.data.some(
+                            (servicioSuc) =>
+                              servicioSuc.CodServicio === servicio.CodServicio
+                          )
+                      )
+                      .map((servicio) => (
+                        <option
+                          key={servicio.CodServicio}
+                          value={servicio.CodServicio}
+                        >
+                          {servicio.NombreServ}
+                        </option>
+                      ))}
+                  </Select>
+                </fieldset>
+                <fieldset className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="Capacidad">Capacidad</Label>
+                    <TextInput
+                      id="Capacidad"
+                      name="Capacidad"
+                      type="number"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="TiempoReserva">
+                      Tiempo de reserva (días)
+                    </Label>
+                    <TextInput
+                      id="TiempoReserva"
+                      name="TiempoReserva"
+                      type="number"
+                      required
+                    />
+                  </div>
+                </fieldset>
+                <Button type="submit" name="_action" value="ofrecerServ">
+                  Ofrecer
+                </Button>
+              </fetcher.Form>
+            </Modal.Body>
+          </Modal>
+          <Modal show={isCreatingAct} onClose={() => setIsCreatingAct(false)}>
+            <Modal.Header>Agregar actividad</Modal.Header>
+            <Modal.Body>
+              <fetcher.Form
+                method="post"
+                onSubmit={() => setIsCreatingAct(false)}
+              >
+                <fieldset>
+                  <Label htmlFor="DescActividad">
+                    Descripción de la actividad
+                  </Label>
+                  <TextInput
+                    id="DescActividad"
+                    name="DescActividad"
+                    type="text"
+                    required
+                  />
+                </fieldset>
+                <fieldset>
+                  <Label htmlFor="CostoHora">Costo por hora</Label>
+                  <TextInput
+                    id="CostoHora"
+                    name="CostoHora"
+                    type="number"
+                    required
+                  />
+                </fieldset>
+                <input
+                  type="hidden"
+                  name="CodServicio"
+                  value={codServicioAgg}
+                />
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="nuevaAct"
+                  disabled={fetcher.state !== "idle"}
+                >
+                  Agregar
+                </Button>
+              </fetcher.Form>
+            </Modal.Body>
+          </Modal>
+          <Modal show={isEditAct} onClose={() => setIsEditAct(false)}>
+            <Modal.Header>Agregar actividad</Modal.Header>
+            <Modal.Body>
+              <fetcher.Form method="post" onSubmit={() => setIsEditAct(false)}>
+                <fieldset>
+                  <Label htmlFor="DescActividad">
+                    Descripción de la actividad
+                  </Label>
+                  <TextInput
+                    id="DescActividad"
+                    name="DescActividad"
+                    type="text"
+                    required
+                    defaultValue={activEdit?.DescActividad ?? ""}
+                  />
+                </fieldset>
+                <fieldset>
+                  <Label htmlFor="CostoHora">Costo por hora</Label>
+                  <TextInput
+                    id="CostoHora"
+                    name="CostoHora"
+                    type="number"
+                    required
+                    defaultValue={activEdit?.CostoHora ?? 0}
+                  />
+                </fieldset>
+                <input
+                  type="hidden"
+                  name="CodServicio"
+                  value={codServicioAgg}
+                />
+                <input
+                  type="hidden"
+                  name="CodActividad"
+                  value={activEdit?.CodActividad ?? 0}
+                />
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="editAct"
+                  disabled={fetcher.state !== "idle"}
+                >
+                  Editar
+                </Button>
+              </fetcher.Form>
+            </Modal.Body>
+          </Modal>
+          <Modal
+            show={isEliminarAct}
+            size="md"
+            onClose={() => setIsEliminarAct(false)}
+            popup
+          >
+            <Modal.Header />
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+                <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                  ¿Desea eliminar la actividad {activEdit?.DescActividad}?
+                </h3>
+                <div className="flex justify-center gap-4">
+                  <fetcher.Form
+                    method="post"
+                    onSubmit={() => setIsEliminarAct(false)}
+                  >
+                    <input
+                      type="hidden"
+                      name="CodServicio"
+                      value={codServicioAgg}
+                    />
+                    <input
+                      type="hidden"
+                      name="CodActividad"
+                      value={activEdit?.CodActividad ?? 0}
+                    />
+                    <Button
+                      color="success"
+                      type="submit"
+                      name="_action"
+                      value="deleteAct"
+                    >
+                      Si, Confirmar
+                    </Button>
+                  </fetcher.Form>
+
+                  <Button color="gray" onClick={() => setIsEliminar(false)}>
+                    No, Cancelar
+                  </Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
         </Tabs.Item>
         <Tabs.Item title="Fichas de servicio">
           <Button
@@ -269,159 +713,6 @@ export default function DashboardServicios() {
           </Table>
         </Tabs.Item>
       </Tabs>
-      <Modal show={isOffering} onClose={() => setIsOffering(false)}>
-        <Modal.Header>Ofrecer servicios</Modal.Header>
-        <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setIsOffering(false)}>
-            <fieldset>
-              <Label htmlFor="CodServicio">Servicio</Label>
-              <Select id="CodServicio" name="CodServicio" required>
-                {servicios.data
-                  .filter(
-                    (servicio) =>
-                      !serviciosSuc.data.some(
-                        (servicioSuc) =>
-                          servicioSuc.CodServicio === servicio.CodServicio
-                      )
-                  )
-                  .map((servicio) => (
-                    <option
-                      key={servicio.CodServicio}
-                      value={servicio.CodServicio}
-                    >
-                      {servicio.NombreServ}
-                    </option>
-                  ))}
-              </Select>
-            </fieldset>
-            <fieldset className="grid grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="Capacidad">Capacidad</Label>
-                <TextInput
-                  id="Capacidad"
-                  name="Capacidad"
-                  type="number"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="TiempoReserva">Tiempo de reserva (días)</Label>
-                <TextInput
-                  id="TiempoReserva"
-                  name="TiempoReserva"
-                  type="number"
-                  required
-                />
-              </div>
-            </fieldset>
-            <Button type="submit" name="_action" value="ofrecerServ">
-              Ofrecer
-            </Button>
-          </fetcher.Form>
-        </Modal.Body>
-      </Modal>
-      <Modal show={isCreating} onClose={() => setIsCreating(false)}>
-        <Modal.Header>Nuevo servicio</Modal.Header>
-        <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setIsCreating(false)}>
-            <fieldset>
-              <Label htmlFor="NombreServ">Nombre del servicio</Label>
-              <TextInput
-                id="NombreServ"
-                name="NombreServ"
-                type="text"
-                required
-              />
-            </fieldset>
-            <fieldset className="grid grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="CICoordinador">Coordinador</Label>
-                <Select id="CICoordinador" name="CICoordinador" required>
-                  {empleados.data.empleados.map((emp) => (
-                    <option key={emp.CIEmpleado} value={emp.CIEmpleado}>
-                      {emp.CIEmpleado} - {emp.NombreEmp}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="CIEncargado">Encargado</Label>
-                <Select id="CIEncargado" name="CIEncargado" required>
-                  {empleados.data.empleados.map((emp) => (
-                    <option key={emp.CIEmpleado} value={emp.CIEmpleado}>
-                      {emp.CIEmpleado} - {emp.NombreEmp}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </fieldset>
-            <fieldset className="grid grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="Capacidad">Capacidad</Label>
-                <TextInput
-                  id="Capacidad"
-                  name="Capacidad"
-                  type="number"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="TiempoReserva">
-                  Tiempo mínimo de reserva (días)
-                </Label>
-                <TextInput
-                  id="TiempoReserva"
-                  name="TiempoReserva"
-                  type="number"
-                  required
-                />
-              </div>
-            </fieldset>
-            <Button
-              type="submit"
-              name="_action"
-              value="nuevoServ"
-              disabled={fetcher.state !== "idle"}
-            >
-              Agregar
-            </Button>
-          </fetcher.Form>
-        </Modal.Body>
-      </Modal>
-      <Modal show={isCreatingAct} onClose={() => setIsCreatingAct(false)}>
-        <Modal.Header>Agregar actividad</Modal.Header>
-        <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setIsCreatingAct(false)}>
-            <fieldset>
-              <Label htmlFor="DescActividad">Descripción de la actividad</Label>
-              <TextInput
-                id="DescActividad"
-                name="DescActividad"
-                type="text"
-                required
-              />
-            </fieldset>
-            <fieldset>
-              <Label htmlFor="CostoHora">Costo por hora</Label>
-              <TextInput
-                id="CostoHora"
-                name="CostoHora"
-                type="number"
-                required
-              />
-            </fieldset>
-            <input type="hidden" name="CodServicio" value={codServicioAgg} />
-            <Button
-              type="submit"
-              name="_action"
-              value="nuevaAct"
-              disabled={fetcher.state !== "idle"}
-            >
-              Agregar
-            </Button>
-          </fetcher.Form>
-        </Modal.Body>
-      </Modal>
       <Modal show={isCreatingFicha} onClose={() => setIsCreatingFicha(false)}>
         <Modal.Header>Solicitar servicio</Modal.Header>
         <Modal.Body>

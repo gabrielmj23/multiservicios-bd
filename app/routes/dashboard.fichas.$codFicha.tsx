@@ -125,10 +125,10 @@ export default function DashboardFicha() {
                   Actividad: {actividad.DescAct}
                 </Accordion.Title>
                 <Accordion.Content className="bg-white">
-                  <p>${actividad.PrecioHora} por hora</p>
-                  <p>Duración: {actividad.Tiempo} horas</p>
+                  <p><b>Costo: </b>${actividad.PrecioHora} por hora</p>
+                  <p><b>Duración: </b>{actividad.Tiempo} horas</p>
                   <div>
-                    <p className="font-semibold">Recursos utilizados:</p>
+                    <p className="font-bold">Recursos utilizados:</p>
                     <ol className="ps-6">
                       {actividad.RecursosUsados.map((recurso) =>
                         recurso.CodInsumo === null ? null : (

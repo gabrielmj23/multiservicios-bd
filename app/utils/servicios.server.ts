@@ -114,6 +114,46 @@ export async function addServicio(formData: FormData, RIFSuc: string) {
   }
 }
 
+export async function editServicio(formData: FormData) {
+  try {
+    const servicio = {
+      CodServicio: Number(formData.get("CodServicio")),
+      NombreServ: String(formData.get("NombreServ")),
+      CIEncargado: String(formData.get("CIEncargado")),
+      CICoordinador: String(formData.get("CICoordinador")),
+    };
+    await sql.connect(sqlConfig);
+    await sql.query`
+            UPDATE Servicios
+            SET NombreServ = ${servicio.NombreServ}, CIEncargado = ${servicio.CIEncargado}, CICoordinador = ${servicio.CICoordinador}
+            WHERE CodServicio = ${servicio.CodServicio}
+        `;
+    return {
+      type: "success" as const,
+      message: "Servicio editado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function eliminarServicio(formData: FormData) {
+  try {
+    const CodServicio = Number(formData.get("CodServicio"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+            DELETE FROM Servicios
+            WHERE CodServicio = ${CodServicio}
+        `;
+    return {
+      type: "success" as const,
+      message: "Servicio eliminado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
 export async function ofrecerServicio(formData: FormData, RIFSuc: string) {
   try {
     const CodServicio = Number(formData.get("CodServicio"));
@@ -148,6 +188,47 @@ export async function addActividad(formData: FormData) {
     return {
       type: "success" as const,
       message: "Actividad agregada con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function editActividad(formData: FormData) {
+  try {
+    const actividad = {
+      CodServicio: Number(formData.get("CodServicio")),
+      CodActividad: Number(formData.get("CodActividad")),
+      DescActividad: String(formData.get("DescActividad")),
+      CostoHora: Number(formData.get("CostoHora")),
+    };
+    await sql.connect(sqlConfig);
+    await sql.query`
+            UPDATE Actividades
+            SET DescActividad = ${actividad.DescActividad}, CostoHora = ${actividad.CostoHora}
+            WHERE CodServicio = ${actividad.CodServicio} AND CodActividad = ${actividad.CodActividad}
+        `;
+    return {
+      type: "success" as const,
+      message: "Actividad editada con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function eliminarActividad(formData: FormData) {
+  try {
+    const CodServicio = Number(formData.get("CodServicio"));
+    const CodActividad = Number(formData.get("CodActividad"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+            DELETE FROM Actividades
+            WHERE CodServicio = ${CodServicio} AND CodActividad = ${CodActividad}
+        `;
+    return {
+      type: "success" as const,
+      message: "Actividad eliminada con éxito",
     };
   } catch (error) {
     return handleError(error);
