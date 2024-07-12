@@ -80,6 +80,7 @@ export default function DashboardSucursal() {
     useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const [openModal, setOpenModal] = useState(false);
+  const [openModalEliminar, setOpenModalEliminar] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] =
     useState<Empleado | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoV | null>(null);
@@ -112,6 +113,11 @@ export default function DashboardSucursal() {
     setEmpleadoSeleccionado(empleado);
     setOpenModal(true);
   };
+
+  const HandleSeleccionarEliminarClick = (tipo: TipoV) => {
+    setTipoSeleccionado(tipo);
+    setOpenModalEliminar(true);
+  }
 
   const handleSeleccionarClickTipo = (tipo: TipoV) => {
     setTipoSeleccionado(tipo);
@@ -257,7 +263,7 @@ export default function DashboardSucursal() {
                       </Table.Cell>
                       <Table.Cell>
                         <button
-                          onClick={() => handleSeleccionarClickTipo(tipo)}
+                          onClick={() => HandleSeleccionarEliminarClick(tipo)}
                           className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
                         >
                           Eliminar
@@ -268,9 +274,9 @@ export default function DashboardSucursal() {
                 </Table.Body>
                 {tipoSeleccionado && (
                   <Modal
-                    show={openModal}
+                    show={openModalEliminar}
                     size="md"
-                    onClose={() => setOpenModal(false)}
+                    onClose={() => setOpenModalEliminar(false)}
                     popup
                   >
                     <Modal.Header />
@@ -282,7 +288,7 @@ export default function DashboardSucursal() {
                           {tipoSeleccionado.NombreTipo} en la sucursal?
                         </h3>
                         <div className="flex justify-center gap-4">
-                          <fetcher.Form method="post" onSubmit={() => setOpenModal(false)}>
+                          <fetcher.Form method="post" onSubmit={() => setOpenModalEliminar(false)}>
                             <input
                               type="hidden"
                               name="RIFSuc"

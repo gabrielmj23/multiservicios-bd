@@ -81,7 +81,7 @@ export async function eliminarSucursalesAtiendenVehiculos(formData: FormData) {
     const RIFSuc = String(formData.get("RIFSuc"));
     const CodTipo = String(formData.get("CodTipo"));
     await sql.query`
-                DELETE FROM SucursalesAtiendenVehiculos WHERE RIFSuc = ${RIFSuc} AND CodTipo = ${CodTipo}
+                DELETE FROM SucursalesAtiendenVehiculos WHERE RIFSucursal = ${RIFSuc} AND CodTipo = ${CodTipo}
             `;
     return { type: "success" as const, message: "Creado con éxito" };
   } catch (error) {

@@ -7,6 +7,7 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { z } from "zod";
 import { getSession } from "~/session";
 import {
@@ -14,7 +15,7 @@ import {
   editarEmpleado,
   getEmpleados,
   hacerEncargado,
-  eliminarEmpleado,
+  deleteEmpleado,
 } from "~/utils/empleados.server";
 import { empleadoSchema } from "~/utils/schemas";
 
@@ -49,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
     case "editarEmp":
       return await editarEmpleado(formData);
     case "eliminarEmp":
-      return await eliminarEmpleado(formData, RIFSuc);
+      return await deleteEmpleado(formData, RIFSuc);
   }
 }
 
@@ -57,7 +58,7 @@ export default function DashboardEmpleados() {
   const empleados = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
-  const [eliminarEmpleado, seteliminarEmpleado] = useState<z.infer<
+  const [eliminarEmpleado, setEliminarEmpleado] = useState<z.infer<
     typeof empleadoSchema
   > | null>(null);
   const [isEliminar, setIsEliminar] = useState(false);
@@ -298,20 +299,20 @@ export default function DashboardEmpleados() {
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
               ¿Desea eliminar al empleado {" "}
-              {eliminarEmpleado.NombreEmp} de cedula {" "}
-              {eliminarEmpleado.CIEmpleado} de la sucursal?
+              {eliminarEmpleado?.NombreEmp} de cedula {" "}
+              {eliminarEmpleado?.CIEmpleado} de la sucursal?
             </h3>
             <div className="flex justify-center gap-4">
               <fetcher.Form method="post" onSubmit={() => setOpenModal(false)}>
                 <input
                   type="hidden"
                   name="CIEmpleado"
-                  value={eliminarEmpleado.CIEmpleado}
+                  value={eliminarEmpleado?.CIEmpleado}
                 />
                 <input
                   type="hidden"
                   name="NombreEmp"
-                  value={eliminarEmpleado.NombreEmp}
+                  value={eliminarEmpleado?.NombreEmp}
                 />
                 <Button
                   color="success"
