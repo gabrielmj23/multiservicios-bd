@@ -7,6 +7,7 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { z } from "zod";
 import { getSession } from "~/session";
 import {
@@ -14,6 +15,7 @@ import {
   editarEmpleado,
   getEmpleados,
   hacerEncargado,
+  deleteEmpleado,
 } from "~/utils/empleados.server";
 import { empleadoSchema } from "~/utils/schemas";
 
@@ -47,6 +49,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return await hacerEncargado(formData, RIFSuc);
     case "editarEmp":
       return await editarEmpleado(formData);
+    case "eliminarEmp":
+      return await deleteEmpleado(formData, RIFSuc);
   }
 }
 
@@ -54,6 +58,10 @@ export default function DashboardEmpleados() {
   const empleados = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
+  const [eliminarEmpleado, setEliminarEmpleado] = useState<z.infer<
+    typeof empleadoSchema
+  > | null>(null);
+  const [isEliminar, setIsEliminar] = useState(false);
   const [editingEmpleado, setEditingEmpleado] = useState<z.infer<
     typeof empleadoSchema
   > | null>(null);
@@ -147,7 +155,14 @@ export default function DashboardEmpleados() {
                     >
                       Editar
                     </option>
-                    <option>Eliminar</option>
+                    <option
+                      onClick={() => {
+                        setEliminarEmpleado(emp);
+                        setIsEliminar(true);
+                      }}
+                    >
+                      Eliminar
+                    </option>
                   </Select>
                 </Table.Cell>
               </Table.Row>
@@ -271,6 +286,49 @@ export default function DashboardEmpleados() {
               Editar
             </Button>
           </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={isEliminar}
+        size="md"
+        onClose={() => setIsEliminar(false)}
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              ¿Desea eliminar al empleado {eliminarEmpleado?.NombreEmp} de
+              cedula {eliminarEmpleado?.CIEmpleado} de la sucursal?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <fetcher.Form method="post" onSubmit={() => setIsEliminar(false)}>
+                <input
+                  type="hidden"
+                  name="CIEmpleado"
+                  value={eliminarEmpleado?.CIEmpleado}
+                />
+                <input
+                  type="hidden"
+                  name="NombreEmp"
+                  value={eliminarEmpleado?.NombreEmp}
+                />
+                <Button
+                  color="success"
+                  type="submit"
+                  name="_action"
+                  value="eliminarEmp"
+                >
+                  Si, Confirmar
+                </Button>
+              </fetcher.Form>
+
+              <Button color="gray" onClick={() => setIsEliminar(false)}>
+                No, Cancelar
+              </Button>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
     </div>

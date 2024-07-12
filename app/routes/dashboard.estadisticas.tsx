@@ -164,13 +164,13 @@ export default function DashboardEstadisticas() {
             <Table.Body>
               {personalMasAtiende.data.map((persona) => (
                 <Table.Row
-                  key={`${persona.CIEmpleado}${persona.MesServ}${persona.AñoServ}`}
+                  key={`${persona.CIEmpleado}${persona.MesServ}${persona.AnioServ}`}
                 >
                   <Table.Cell>{persona.CIEmpleado}</Table.Cell>
                   <Table.Cell>{persona.NombreEmp}</Table.Cell>
                   <Table.Cell>{persona.TotalServicios}</Table.Cell>
                   <Table.Cell>
-                    {persona.MesServ}/{persona.AñoServ}
+                    {persona.MesServ}/{persona.AnioServ}
                   </Table.Cell>
                 </Table.Row>
               ))}

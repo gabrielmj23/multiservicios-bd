@@ -10,7 +10,13 @@ import {
 } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { addMarca, getMarcasConModelos } from "~/utils/marcas.server";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+import {
+  addMarca,
+  editMarca,
+  eliminarMarca,
+  getMarcasConModelos,
+} from "~/utils/marcas.server";
 import { addModelo } from "~/utils/modelos.server";
 import { getTipos } from "~/utils/tipos.server";
 
@@ -26,6 +32,10 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (String(formData.get("_action"))) {
     case "nuevaMarca":
       return await addMarca(formData);
+    case "editMarca":
+      return await editMarca(formData);
+    case "eliminarMarca":
+      return await eliminarMarca(formData);
     case "nuevoModelo":
       return await addModelo(formData);
   }
@@ -36,6 +46,13 @@ export default function DashboardMarcas() {
   const fetcher = useFetcher<typeof action>();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingModelo, setIsCreatingModelo] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [marcaEdit, setMarcaEdit] = useState<{
+    CodMarca: number;
+    NombreMarca: string;
+    Modelos: Array<{ CodModelo: number | null; DescModelo: string | null }>;
+  } | null>(null);
+  const [isEliminar, setIsEliminar] = useState(false);
   const [codMarcaModelo, setCodMarcaModelo] = useState(0);
 
   if (marcas.type === "error" || tiposVehiculos.type === "error") {
@@ -101,16 +118,37 @@ export default function DashboardMarcas() {
                       )
                     )}
                   </ul>
-                  <Button
-                    type="button"
-                    className="mt-3"
-                    onClick={() => {
-                      setIsCreatingModelo(true);
-                      setCodMarcaModelo(marca.CodMarca);
-                    }}
-                  >
-                    Nuevo modelo
-                  </Button>
+                  <div className="grid grid-cols-3 gap-3 mt-3">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setIsCreatingModelo(true);
+                        setCodMarcaModelo(marca.CodMarca);
+                      }}
+                    >
+                      Nuevo modelo
+                    </Button>
+                    <Button
+                      type="button"
+                      color="warning"
+                      onClick={() => {
+                        setMarcaEdit(marca);
+                        setIsEdit(true);
+                      }}
+                    >
+                      Editar marca
+                    </Button>
+                    <Button
+                      type="button"
+                      color="failure"
+                      onClick={() => {
+                        setMarcaEdit(marca);
+                        setIsEliminar(true);
+                      }}
+                    >
+                      Eliminar marca
+                    </Button>
+                  </div>
                 </Accordion.Content>
               </Accordion.Panel>
             ))}
@@ -135,10 +173,69 @@ export default function DashboardMarcas() {
           </fetcher.Form>
         </Modal.Body>
       </Modal>
+      <Modal show={isEdit} onClose={() => setIsEdit(false)}>
+        <Modal.Header>Editar marca</Modal.Header>
+        <Modal.Body>
+          <fetcher.Form method="post" onSubmit={() => setIsEdit(false)}>
+            <fieldset>
+              <Label htmlFor="NombreMarca">Nombre de la marca</Label>
+              <TextInput
+                id="NombreMarca"
+                name="NombreMarca"
+                type="text"
+                defaultValue={marcaEdit?.NombreMarca}
+              ></TextInput>
+            </fieldset>
+            <input type="hidden" name="CodMarca" value={marcaEdit?.CodMarca} />
+            <Button type="submit" name="_action" value="editMarca">
+              Editar
+            </Button>
+          </fetcher.Form>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={isEliminar}
+        size="md"
+        onClose={() => setIsEliminar(false)}
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              ¿Desea eliminar la marca {marcaEdit?.NombreMarca}?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <fetcher.Form method="post" onSubmit={() => setIsEliminar(false)}>
+                <input
+                  type="hidden"
+                  name="CodMarca"
+                  value={marcaEdit?.CodMarca}
+                />
+                <Button
+                  color="success"
+                  type="submit"
+                  name="_action"
+                  value="eliminarMarca"
+                >
+                  Si, Confirmar
+                </Button>
+              </fetcher.Form>
+              <Button color="gray" onClick={() => setIsEliminar(false)}>
+                No, Cancelar
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
       <Modal show={isCreatingModelo} onClose={() => setIsCreatingModelo(false)}>
         <Modal.Header>Nuevo modelo</Modal.Header>
         <Modal.Body>
-          <fetcher.Form method="post" onSubmit={() => setIsCreatingModelo(false)}>
+          <fetcher.Form
+            method="post"
+            onSubmit={() => setIsCreatingModelo(false)}
+          >
             <fieldset>
               <Label htmlFor="DescModelo">Descripción</Label>
               <TextInput

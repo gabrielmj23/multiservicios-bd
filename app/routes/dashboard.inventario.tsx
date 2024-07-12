@@ -159,7 +159,6 @@ export default function DashboardInventario() {
               <div className="overflow-x-auto">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell>Código</Table.HeadCell>
                     <Table.HeadCell>Nombre</Table.HeadCell>
                     <Table.HeadCell>Descripcion</Table.HeadCell>
                     <Table.HeadCell>Fabricante</Table.HeadCell>
@@ -175,7 +174,6 @@ export default function DashboardInventario() {
                   <Table.Body className="bg-white">
                     {insumos.data.map((insumo) => (
                       <Table.Row key={insumo.CodIns}>
-                        <Table.Cell>{insumo.CodIns}</Table.Cell>
                         <Table.Cell>{insumo.NombreIns}</Table.Cell>
                         <Table.Cell>{insumo.DescripcionIns}</Table.Cell>
                         <Table.Cell>{insumo.FabricanteIns}</Table.Cell>
@@ -206,6 +204,48 @@ export default function DashboardInventario() {
                   </Table.Body>
                 </Table>
               </div>
+            </>
+          )}
+          {inventariosFisicos.data.length === 0 ? (
+            <>
+              <p>No hay inventarios fisicos todavía</p>
+              <Button
+                type="button"
+                className="mt-2"
+                onClick={() => setNuevoInventarioModalOpen(true)}
+              >
+                Registra el primer inventario fisico
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                type="button"
+                className="my-2"
+                onClick={() => setNuevoInventarioModalOpen(true)}
+              >
+                Nuevo inventario fisico
+              </Button>
+              <Table hoverable className="min-w-fit">
+                <Table.Head>
+                  <Table.HeadCell>Id</Table.HeadCell>
+                  <Table.HeadCell>Fecha</Table.HeadCell>
+                  <Table.HeadCell>Código de insumo</Table.HeadCell>
+                  <Table.HeadCell>Cantidad</Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="bg-white">
+                  {inventariosFisicos.data.map((inventario) => (
+                    <Table.Row key={inventario.IdInv}>
+                      <Table.Cell>{inventario.IdInv}</Table.Cell>
+                      <Table.Cell>
+                        {new Date(inventario.FechaInv).toLocaleDateString()}
+                      </Table.Cell>
+                      <Table.Cell>{inventario.CodIns}</Table.Cell>
+                      <Table.Cell>{inventario.Cantidad}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
             </>
           )}
         </Tabs.Item>
@@ -362,16 +402,12 @@ export default function DashboardInventario() {
             method="post"
             onSubmit={() => setEditInsumoModalOpen(false)}
           >
-            <fieldset>
-              <Label htmlFor="CodIns">Código de insumo</Label>
-              <TextInput
-                type="number"
-                id="CodIns"
-                name="CodIns"
-                defaultValue={insumoEditando?.CodIns}
-                readOnly={true}
-              />
-            </fieldset>
+            <input
+              type="hidden"
+              id="CodIns"
+              name="CodIns"
+              value={insumoEditando?.CodIns}
+            />
             <fieldset>
               <Label htmlFor="NombreIns">Nombre</Label>
               <TextInput
@@ -405,7 +441,7 @@ export default function DashboardInventario() {
                 type="number"
                 id="EsEco"
                 name="EsEco"
-                defaultValue={insumoEditando?.EsEco}
+                defaultValue={insumoEditando?.EsEco ? 1 : 0}
               />
             </fieldset>
             <fieldset>
@@ -556,16 +592,11 @@ export default function DashboardInventario() {
             method="post"
             onSubmit={() => setEditLineaModalOpen(false)}
           >
-            <fieldset>
-              <Label htmlFor="CodLinea">Código de línea</Label>
-              <TextInput
-                type="number"
-                id="CodLinea"
-                name="CodLinea"
-                defaultValue={lineaEditando?.CodLinea}
-                readOnly={true}
-              />
-            </fieldset>
+            <input
+              type="hidden"
+              name="CodLinea"
+              value={lineaEditando?.CodLinea}
+            />
             <fieldset>
               <Label htmlFor="NombreLinea">Nombre de línea</Label>
               <TextInput
@@ -626,48 +657,7 @@ export default function DashboardInventario() {
           </fetcher.Form>
         </Modal.Body>
       </Modal>
-      {inventariosFisicos.data.length === 0 ? (
-        <>
-          <p>No hay inventarios fisicos todavía</p>
-          <Button
-            type="button"
-            className="mt-2"
-            onClick={() => setNuevoInventarioModalOpen(true)}
-          >
-            Registra el primer inventario fisico
-          </Button>
-        </>
-      ) : (
-        <>
-          <Button
-            type="button"
-            className="my-2"
-            onClick={() => setNuevoInventarioModalOpen(true)}
-          >
-            Nuevo inventario fisico
-          </Button>
-          <Table hoverable className="min-w-fit">
-            <Table.Head>
-              <Table.HeadCell>Id</Table.HeadCell>
-              <Table.HeadCell>Fecha</Table.HeadCell>
-              <Table.HeadCell>Código de insumo</Table.HeadCell>
-              <Table.HeadCell>Cantidad</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="bg-white">
-              {inventariosFisicos.data.map((inventario) => (
-                <Table.Row key={inventario.IdInv}>
-                  <Table.Cell>{inventario.IdInv}</Table.Cell>
-                  <Table.Cell>
-                    {new Date(inventario.FechaInv).toLocaleDateString()}
-                  </Table.Cell>
-                  <Table.Cell>{inventario.CodIns}</Table.Cell>
-                  <Table.Cell>{inventario.Cantidad}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        </>
-      )}
+
       <Modal
         show={nuevoInventarioModalOpen}
         onClose={() => setNuevoInventarioModalOpen(false)}

@@ -711,7 +711,7 @@ ORDER BY TotalVentas DESC OFFSET 0 ROWS
 GO
 CREATE VIEW PersonalRealizaServiciosPorMes
 AS
-SELECT emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt) AS A�oServ, MONTH(fs.TiempoEnt) AS MesServ, COUNT(DISTINCT ar.CodServicio) AS TotalServicios
+SELECT emp.RIFSuc, emp.CIEmpleado, emp.NombreEmp, YEAR(fs.TiempoEnt) AS AnioServ, MONTH(fs.TiempoEnt) AS MesServ, COUNT(DISTINCT ar.CodServicio) AS TotalServicios
 FROM Empleados emp, FichasServicios fs, ActividadesRealizadas ar, Servicios srv
 WHERE ar.CodFicha = fs.CodFicha
 AND ar.CodServicio = srv.CodServicio

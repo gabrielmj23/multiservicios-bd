@@ -80,6 +80,7 @@ export default function DashboardSucursal() {
     useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const [openModal, setOpenModal] = useState(false);
+  const [openModalEliminar, setOpenModalEliminar] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] =
     useState<Empleado | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoV | null>(null);
@@ -112,6 +113,11 @@ export default function DashboardSucursal() {
     setEmpleadoSeleccionado(empleado);
     setOpenModal(true);
   };
+
+  const HandleSeleccionarEliminarClick = (tipo: TipoV) => {
+    setTipoSeleccionado(tipo);
+    setOpenModalEliminar(true);
+  }
 
   const handleSeleccionarClickTipo = (tipo: TipoV) => {
     setTipoSeleccionado(tipo);
@@ -242,6 +248,9 @@ export default function DashboardSucursal() {
               <Table>
                 <Table.Head>
                   <Table.HeadCell>Nombre</Table.HeadCell>
+                  <Table.HeadCell>
+                    <span className="sr-only">Eliminar</span>
+                  </Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y">
                   {tiposSucursal.data.map((tipo) => (
@@ -252,14 +261,22 @@ export default function DashboardSucursal() {
                       <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                         {tipo.NombreTipo}
                       </Table.Cell>
+                      <Table.Cell>
+                        <button
+                          onClick={() => HandleSeleccionarEliminarClick(tipo)}
+                          className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                        >
+                          Eliminar
+                        </button>
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
                 {tipoSeleccionado && (
                   <Modal
-                    show={openModal}
+                    show={openModalEliminar}
                     size="md"
-                    onClose={() => setOpenModal(false)}
+                    onClose={() => setOpenModalEliminar(false)}
                     popup
                   >
                     <Modal.Header />
@@ -267,33 +284,37 @@ export default function DashboardSucursal() {
                       <div className="text-center">
                         <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
                         <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                          ¿Quieres agregar el tipo de vehiculo{" "}
+                          ¿Quieres eliminar el tipo de vehiculo{" "}
                           {tipoSeleccionado.NombreTipo} en la sucursal?
                         </h3>
                         <div className="flex justify-center gap-4">
-                          <Button
-                            color="failure"
-                            onClick={() => {
-                              fetcher.submit(
-                                {
-                                  _action:
-                                    "eliminarSucursalesAtiendenVehiculos",
-                                  RIFSuc: sucursal.data.RIFSuc,
-                                  CodTipo: tipoSeleccionado.CodTipo,
-                                },
-                                { method: "post" }
-                              );
-                              setOpenModal(false);
-                            }}
-                          >
-                            {"Si, Confirmar"}
-                          </Button>
+                          <fetcher.Form method="post" onSubmit={() => setOpenModalEliminar(false)}>
+                            <input
+                              type="hidden"
+                              name="RIFSuc"
+                              value={sucursal.data.RIFSuc}
+                            />
+                            <input
+                              type="hidden"
+                              name="CodTipo"
+                              value={tipoSeleccionado.CodTipo}
+                            />
+                            <Button
+                              color="success"
+                              type="submit"
+                              name="_action"
+                              value="eliminarSucursalesAtiendenVehiculos"
+                            >
+                              Si, Confirmar
+                            </Button>
+                          </fetcher.Form>
+
                           <Button
                             color="gray"
                             onClick={() => setOpenModal(false)}
                           >
                             No, Cancelar
-                          </Button>
+                          </Button>                          
                         </div>
                       </div>
                     </Modal.Body>
