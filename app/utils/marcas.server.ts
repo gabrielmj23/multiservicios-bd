@@ -91,3 +91,33 @@ export async function addMarca(formData: FormData) {
     return handleError(error);
   }
 }
+
+export async function editMarca(formData: FormData) {
+  try {
+    await sql.connect(sqlConfig);
+    const codMarca = Number(formData.get("CodMarca"));
+    const nombreMarca = String(formData.get("NombreMarca"));
+    await sql.query`
+            UPDATE Marcas
+            SET NombreMarca = ${nombreMarca}
+            WHERE CodMarca = ${codMarca}
+        `;
+    return { type: "success" as const, message: "Editada con éxito" };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function eliminarMarca(formData: FormData) {
+  try {
+    await sql.connect(sqlConfig);
+    const codMarca = Number(formData.get("CodMarca"));
+    await sql.query`
+            DELETE FROM Marcas
+            WHERE CodMarca = ${codMarca}
+        `;
+    return { type: "success" as const, message: "Eliminada con éxito" };
+  } catch (error) {
+    return handleError(error);
+  }
+}
