@@ -50,6 +50,26 @@ export async function addEmpleado(formData: FormData, RIFSuc: string) {
   }
 }
 
+export async function eliminarEmpleado(formData: FormData, RIFSuc: string) {
+  try {
+    const empleado = {
+      CIEmpleado: String(formData.get("CIEmpleado")),
+      NombreEmp: String(formData.get("NombreEmp")),
+      DireccionEmp: String(formData.get("DireccionEmp")),
+      TlfEmp: String(formData.get("TlfEmp")),
+      SalarioEmp: Number(formData.get("SalarioEmp")),
+    };
+    await sql.connect(sqlConfig);
+    await sql.query`
+      DELETE FROM Empleados
+      WHERE CIEmpleado = ${empleado.CIEmpleado} AND RIFSuc = ${RIFSuc}
+    `;
+    return { type: "success" as const, message: "Empleado eliminado con éxito" };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
 export async function editarEmpleado(formData: FormData) {
   try {
     const empleado = {
