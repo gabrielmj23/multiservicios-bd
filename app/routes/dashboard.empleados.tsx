@@ -7,7 +7,7 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Select, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { z } from "zod";
 import { getSession } from "~/session";
 import {
@@ -161,7 +161,8 @@ export default function DashboardEmpleados() {
                         setIsEliminar(true);
                       }}
                     >
-                      Eliminar</option>
+                      Eliminar
+                    </option>
                   </Select>
                 </Table.Cell>
               </Table.Row>
@@ -298,12 +299,11 @@ export default function DashboardEmpleados() {
           <div className="text-center">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              ¿Desea eliminar al empleado {" "}
-              {eliminarEmpleado?.NombreEmp} de cedula {" "}
-              {eliminarEmpleado?.CIEmpleado} de la sucursal?
+              ¿Desea eliminar al empleado {eliminarEmpleado?.NombreEmp} de
+              cedula {eliminarEmpleado?.CIEmpleado} de la sucursal?
             </h3>
             <div className="flex justify-center gap-4">
-              <fetcher.Form method="post" onSubmit={() => setOpenModal(false)}>
+              <fetcher.Form method="post" onSubmit={() => setIsEliminar(false)}>
                 <input
                   type="hidden"
                   name="CIEmpleado"
@@ -324,10 +324,7 @@ export default function DashboardEmpleados() {
                 </Button>
               </fetcher.Form>
 
-              <Button
-                color="gray"
-                onClick={() => setOpenModal(false)}
-              >
+              <Button color="gray" onClick={() => setIsEliminar(false)}>
                 No, Cancelar
               </Button>
             </div>

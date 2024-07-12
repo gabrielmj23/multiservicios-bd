@@ -159,7 +159,6 @@ export default function DashboardInventario() {
               <div className="overflow-x-auto">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell>Código</Table.HeadCell>
                     <Table.HeadCell>Nombre</Table.HeadCell>
                     <Table.HeadCell>Descripcion</Table.HeadCell>
                     <Table.HeadCell>Fabricante</Table.HeadCell>
@@ -175,7 +174,6 @@ export default function DashboardInventario() {
                   <Table.Body className="bg-white">
                     {insumos.data.map((insumo) => (
                       <Table.Row key={insumo.CodIns}>
-                        <Table.Cell>{insumo.CodIns}</Table.Cell>
                         <Table.Cell>{insumo.NombreIns}</Table.Cell>
                         <Table.Cell>{insumo.DescripcionIns}</Table.Cell>
                         <Table.Cell>{insumo.FabricanteIns}</Table.Cell>
@@ -362,16 +360,12 @@ export default function DashboardInventario() {
             method="post"
             onSubmit={() => setEditInsumoModalOpen(false)}
           >
-            <fieldset>
-              <Label htmlFor="CodIns">Código de insumo</Label>
-              <TextInput
-                type="number"
-                id="CodIns"
-                name="CodIns"
-                defaultValue={insumoEditando?.CodIns}
-                readOnly={true}
-              />
-            </fieldset>
+            <input
+              type="hidden"
+              id="CodIns"
+              name="CodIns"
+              value={insumoEditando?.CodIns}
+            />
             <fieldset>
               <Label htmlFor="NombreIns">Nombre</Label>
               <TextInput
@@ -405,7 +399,7 @@ export default function DashboardInventario() {
                 type="number"
                 id="EsEco"
                 name="EsEco"
-                defaultValue={insumoEditando?.EsEco}
+                defaultValue={insumoEditando?.EsEco ? 1 : 0}
               />
             </fieldset>
             <fieldset>
@@ -556,16 +550,11 @@ export default function DashboardInventario() {
             method="post"
             onSubmit={() => setEditLineaModalOpen(false)}
           >
-            <fieldset>
-              <Label htmlFor="CodLinea">Código de línea</Label>
-              <TextInput
-                type="number"
-                id="CodLinea"
-                name="CodLinea"
-                defaultValue={lineaEditando?.CodLinea}
-                readOnly={true}
-              />
-            </fieldset>
+            <input
+              type="hidden"
+              name="CodLinea"
+              value={lineaEditando?.CodLinea}
+            />
             <fieldset>
               <Label htmlFor="NombreLinea">Nombre de línea</Label>
               <TextInput
@@ -625,7 +614,7 @@ export default function DashboardInventario() {
             </div>
           </fetcher.Form>
         </Modal.Body>
-      </Modal>      
+      </Modal>
     </div>
   );
 }

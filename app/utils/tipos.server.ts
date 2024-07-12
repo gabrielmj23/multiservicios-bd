@@ -35,6 +35,37 @@ export async function addTipo(formData: FormData) {
   }
 }
 
+export async function editTipo(formData: FormData) {
+  try {
+    const tipo = {
+      CodTipo: Number(formData.get("CodTipo")),
+      NombreTipo: String(formData.get("NombreTipo")),
+    };
+    await sql.connect(sqlConfig);
+    await sql.query`
+                UPDATE TiposVehiculos
+                SET NombreTipo = ${tipo.NombreTipo}
+                WHERE CodTipo = ${tipo.CodTipo}
+            `;
+    return { type: "success" as const, message: "Actualizado con éxito" };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function deleteTipo(formData: FormData) {
+  try {
+    const CodTipo = Number(formData.get("CodTipo"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+                DELETE FROM TiposVehiculos WHERE CodTipo = ${CodTipo}
+            `;
+    return { type: "success" as const, message: "Eliminado con éxito" };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
 export async function getTiposNoS(RIFSuc: string) {
   try {
     await sql.connect(sqlConfig);

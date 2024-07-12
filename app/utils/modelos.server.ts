@@ -43,3 +43,50 @@ export async function addModelo(formData: FormData) {
     return handleError(error);
   }
 }
+
+export async function editModelo(formData: FormData) {
+  try {
+    const modelo = {
+      CodMarca: Number(formData.get("CodMarca")),
+      CodModelo: Number(formData.get("CodModelo")),
+      DescModelo: String(formData.get("DescModelo")),
+      NumPuestos: Number(formData.get("NumPuestos")),
+      Peso: Number(formData.get("Peso")),
+      TipoAcMotor: String(formData.get("TipoAcMotor")),
+      TipoAcCaja: String(formData.get("TipoAcCaja")),
+      Octan: Number(formData.get("Octan")),
+      TipoRefri: String(formData.get("TipoRefri")),
+    };
+    console.log(modelo);
+    await sql.connect(sqlConfig);
+    await sql.query`
+            UPDATE Modelos
+            SET DescModelo = ${modelo.DescModelo}, NumPuestos = ${modelo.NumPuestos}, Peso = ${modelo.Peso}, TipoAcMotor = ${modelo.TipoAcMotor}, TipoAcCaja = ${modelo.TipoAcCaja}, Octan = ${modelo.Octan}, TipoRefri = ${modelo.TipoRefri}
+            WHERE CodMarca = ${modelo.CodMarca} AND CodModelo = ${modelo.CodModelo}
+        `;
+    return {
+      type: "success" as const,
+      message: "Modelo actualizado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function eliminarModelo(formData: FormData) {
+  try {
+    const codMarca = Number(formData.get("CodMarca"));
+    const codModelo = Number(formData.get("CodModelo"));
+    await sql.connect(sqlConfig);
+    await sql.query`
+        DELETE FROM Modelos
+        WHERE CodMarca = ${codMarca} AND CodModelo = ${codModelo}
+    `;
+    return {
+      type: "success" as const,
+      message: "Modelo eliminado con éxito",
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
